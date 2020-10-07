@@ -98,19 +98,19 @@ LucidImporter = {};
 			'DisplayBlock': 'shape=display',
 			'OffPageLinkBlock': 'shape=offPageConnector',
 			'BraceNoteBlock': cs,
-			'NoteBlock': 'shape=partialRectangle;right=0', //s + flowchart.annotation_1
+			'NoteBlock': cs,
 //Containers
 			'AdvancedSwimLaneBlock': cs,
 			'AdvancedSwimLaneBlockRotated': cs,
 			'RectangleContainerBlock': 'container=1;collapsible=0',
-			'DiamondContainerBlock':  'shape=rhombus;fillColor=none;container=1',
-			'RoundedRectangleContainerBlock': 'fillColor=none;container=1;rounded=1;absoluteArcSize=1;arcSize=24',
-			'CircleContainerBlock': 'shape=ellipse;fillColor=none;container=1',
-			'PillContainerBlock': 'arcSize=50;fillColor=none;container=1',
-//			'BraceBlock' NA
-//			'BracketBlock' NA
-//			'BraceBlockRotated' NA
-//			'BracketBlockRotated' NA
+			'DiamondContainerBlock':  'shape=rhombus;container=1;collapsible=0',
+			'RoundedRectangleContainerBlock': 'container=1;rounded=1;absoluteArcSize=1;arcSize=24;collapsible=0',
+			'CircleContainerBlock': 'ellipse;container=1;collapsible=0',
+			'PillContainerBlock': 'shape=mxgraph.flowchart.terminator;container=1;collapsible=0',
+			'BraceBlock': cs,
+			'BracketBlock': cs,
+			'BraceBlockRotated': cs,
+			'BracketBlockRotated': cs,
 //Geometric shapes
 			'IsoscelesTriangleBlock': 'triangle;direction=north;anchorPointDirection=0',
 			'RightTriangleBlock': s + 'basic.orthogonal_triangle',
@@ -212,7 +212,7 @@ LucidImporter = {};
 			'MindMapBlock' : '',
 			'MindMapStadiumBlock' : 'arcSize=50',
 			'MindMapCloud' : 'shape=cloud',
-			'MindMapCircle' : 'shape=ellipse',
+			'MindMapCircle' : 'ellipse',
 			'MindMapIsoscelesTriangleBlock' : 'shape=triangle;direction=north',
 			'MindMapDiamondBlock' : 'shape=rhombus',
 			'MindMapPentagonBlock' : s + 'basic.pentagon',
@@ -234,19 +234,19 @@ LucidImporter = {};
 			'UMLTextBlock': cs,
 //UML Use Case
 			'UMLActorBlock': 'shape=umlActor;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;whiteSpace=nowrap',
-			'UMLUseCaseBlock': 'shape=ellipse',
-			'UMLCircleContainerBlock': 'shape=ellipse;container=1',
+			'UMLUseCaseBlock': 'ellipse',
+			'UMLCircleContainerBlock': 'ellipse;container=1',
 			'UMLRectangleContainerBlock': 'container=1',
 //UML State/Activity			
 			'UMLOptionLoopBlock' : s + 'sysml.package2;xSize=90;overflow=fill',
 			'UMLAlternativeBlock2' : s + 'sysml.package2;xSize=90;overflow=fill',
-			'UMLStartBlock' : 'shape=ellipse;fillColor=#000000',
+			'UMLStartBlock' : 'ellipse;fillColor=#000000',
 			'UMLStateBlock' : 'rounded=1;arcSize=20',
 			'UMLDecisionBlock' : 'shape=rhombus;',
 			'UMLHForkJoinBlock' : 'fillColor=#000000',
 			'UMLVForkJoinBlock' : 'fillColor=#000000',
 			'UMLFlowFinalBlock' : s + 'flowchart.or',
-			'UMLHistoryStateBlock' : 'shape=ellipse',
+			'UMLHistoryStateBlock' : 'ellipse',
 			'UMLEndBlock' : s + 'bpmn.shape;outline=end;symbol=terminate;strokeColor=#000000;fillColor=#ffffff',
 			'UMLObjectBlock' : '',
 			'UMLSendSignalBlock' : s + 'sysml.sendSigAct',
@@ -268,8 +268,8 @@ LucidImporter = {};
 //UML Component
 			'UMLComponentBlock' : 'shape=component;align=left;spacingLeft=36',
 			'UMLNodeBlock' : 'shape=cube;size=12;flipH=1',
-			'UMLComponentInterfaceBlock' : 'shape=ellipse',
-			'UMLComponentBoxBlock' : cs, //TODO
+			'UMLComponentInterfaceBlock' : 'ellipse',
+			'UMLComponentBoxBlock' : cs,
 //			'UMLAssemblyConnectorBlock' NA
 			'UMLProvidedInterfaceBlock' : 'shape=lollipop;direction=south',
 			'UMLRequiredInterfaceBlock' : 'shape=requires;direction=north',
@@ -278,7 +278,7 @@ LucidImporter = {};
 //UML Entity Relationship
 			'UMLEntityBlock' : '',
 			'UMLWeakEntityBlock' : 'shape=ext;double=1',
-			'UMLAttributeBlock' : 'shape=ellipse',
+			'UMLAttributeBlock' : 'ellipse',
 			'UMLMultivaluedAttributeBlock' : 'shape=doubleEllipse',
 			'UMLRelationshipBlock' : 'shape=rhombus',
 			'UMLWeakRelationshipBlock' : 'shape=rhombus;double=1',
@@ -293,10 +293,11 @@ LucidImporter = {};
 			'BPMNAdvancedPoolBlock' : cs,
 			'BPMNAdvancedPoolBlockRotated' : cs,
 			'BPMNBlackPool' : cs,
+			'BPMNTextAnnotation' : cs,
 //Data Flow
 			'DFDExternalEntityBlock' : cs,
 			'DFDExternalEntityBlock2' : '',
-			'YDMDFDProcessBlock' : 'shape=ellipse',
+			'YDMDFDProcessBlock' : 'ellipse',
 			'YDMDFDDataStoreBlock' : 'shape=partialRectangle;right=0;left=0',
 			'GSDFDProcessBlock' : 'shape=swimlane;rounded=1;arcSize=10',
 			'GSDFDProcessBlock2' : 'rounded=1;arcSize=10;',
@@ -1821,7 +1822,7 @@ LucidImporter = {};
 //Miscellaneous
 			'EE_Plus' : s + 'ios7.misc.flagged',
 			'EE_Negative' : 'shape=line',
-			'EE_InverterContact' : 'shape=ellipse',
+			'EE_InverterContact' : 'ellipse',
 			'EE_Voltmeter' : s + 'electrical.instruments.voltmeter',
 			'EE_Ammeter' : s + 'electrical.instruments.ampermeter',
 			'EE_SineWave' : s + 'electrical.waveforms.sine_wave',
@@ -2144,16 +2145,16 @@ LucidImporter = {};
 			'fpCubicleDouble14x8' : s + 'floorplan.wallU;wallThickness=3',
 			'fpCubicleEnclosed11x9' : s + 'floorplan.wallU;wallThickness=3',
 //Tables & Chairs
-			'fpTableConferenceOval' : 'shape=ellipse',
+			'fpTableConferenceOval' : 'ellipse',
 			'fpTableConferenceBoat' : '',
 			'fpTableConferenceRectangle' : '',
-			'fpTableDiningRound' : 'shape=ellipse',
+			'fpTableDiningRound' : 'ellipse',
 			'fpTableDiningSquare' : '',
 			'fpChairOffice' : s + 'floorplan.office_chair',
 			'fpChairExecutive' : s + 'floorplan.office_chair',
 			'fpChairLobby' : s + 'floorplan.office_chair',
 			'fpChairDining' : s + 'floorplan.chair',
-			'fpChairBarstool' : 'shape=ellipse',
+			'fpChairBarstool' : 'ellipse',
 //Cubicles - Prebuilt
 //Tables - Prebuilt
 //Cabinets - we don't have corresponding stencils, just rounded rectangles			
@@ -2199,7 +2200,7 @@ LucidImporter = {};
 //Appliances
 			'fpApplianceWasher' : '',
 			'fpApplianceDryer' : '',
-			'fpApplianceWaterHeater' : 'shape=ellipse',
+			'fpApplianceWaterHeater' : 'ellipse',
 //			'fpApplianceRefrigerator' NA
 			'fpApplianceStoveOven' : s + 'floorplan.range_1',
 			'fpStoveOvenSixBurner' : s + 'floorplan.range_2',
@@ -2284,8 +2285,8 @@ LucidImporter = {};
 			'PENuclear' : s + 'electrical.waveforms.sine_wave',
 //			'PEPneumatic' NA
 //			'PEHydraulicSignalLine' NA
-			'PEMechanicalLink' : 'shape=ellipse',
-			'PESolderedSolvent' : 'shape=ellipse',
+			'PEMechanicalLink' : 'ellipse',
+			'PESolderedSolvent' : 'ellipse',
 			'PEDoubleContainment' : 'shape=hexagon;perimeter=hexagonPerimeter2',
 			'PEFlange' : s + 'pid.piping.double_flange',
 			'PEFlange2' : s + 'pid.piping.flange_in;flipH=1',
@@ -2413,23 +2414,23 @@ LucidImporter = {};
 //			'PEOrificeBlock' NA
 			'PERotameterBlock' : s + 'pid.flow_sensors.rotameter;flipH=1;verticalLabelPosition=bottom;verticalAlign=top',
 //Venn Gradient
-			'VennGradientColor1' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor2' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor3' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor4' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor5' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor6' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor7' : 'shape=ellipse;fillOpacity=35',
-			'VennGradientColor8' : 'shape=ellipse;fillOpacity=35',
+			'VennGradientColor1' : 'ellipse;fillOpacity=35',
+			'VennGradientColor2' : 'ellipse;fillOpacity=35',
+			'VennGradientColor3' : 'ellipse;fillOpacity=35',
+			'VennGradientColor4' : 'ellipse;fillOpacity=35',
+			'VennGradientColor5' : 'ellipse;fillOpacity=35',
+			'VennGradientColor6' : 'ellipse;fillOpacity=35',
+			'VennGradientColor7' : 'ellipse;fillOpacity=35',
+			'VennGradientColor8' : 'ellipse;fillOpacity=35',
 //Venn Plain
-			'VennPlainColor1' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor2' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor3' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor4' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor5' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor6' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor7' : 'shape=ellipse;fillOpacity=35',
-			'VennPlainColor8' : 'shape=ellipse;fillOpacity=35',
+			'VennPlainColor1' : 'ellipse;fillOpacity=35',
+			'VennPlainColor2' : 'ellipse;fillOpacity=35',
+			'VennPlainColor3' : 'ellipse;fillOpacity=35',
+			'VennPlainColor4' : 'ellipse;fillOpacity=35',
+			'VennPlainColor5' : 'ellipse;fillOpacity=35',
+			'VennPlainColor6' : 'ellipse;fillOpacity=35',
+			'VennPlainColor7' : 'ellipse;fillOpacity=35',
+			'VennPlainColor8' : 'ellipse;fillOpacity=35',
 //iOS Devices
 			'iOS7DeviceiPhone5Portrait' : s + 'ios.iPhone;bgStyle=bgGreen', //TODO
 			'iOS7DeviceiPhone5Landscape' : s + 'ios.iPhone;bgStyle=bgGreen', //TODO
@@ -2663,12 +2664,12 @@ LucidImporter = {};
 			'Image_ipad_arrow_icon' : s + 'ios.iArrowIcon;fillColor=#8BbEff;fillColor2=#135Ec8;strokeColor=#ffffff',
 			'Image_ipad_arrow' : s + 'ios7.misc.more',
 			'Image_ipad_checkmark' : s + 'ios7.misc.check',
-			'Image_ipad_check_off' : 'shape=ellipse', //TODO
-			'Image_ipad_location_dot' : 'shape=ellipse',
-			'Image_ipad_mark_as_read' : 'shape=ellipse',
+			'Image_ipad_check_off' : 'ellipse', //TODO
+			'Image_ipad_location_dot' : 'ellipse',
+			'Image_ipad_mark_as_read' : 'ellipse',
 			'Image_ipad_pin_green' : s + 'ios.iPin;fillColor2=#00dd00;fillColor3=#004400;strokeColor=#006600',
 			'Image_ipad_pin_red' : s + 'ios.iPin;fillColor2=#dd0000;fillColor3=#440000;strokeColor=#660000',
-			'Image_ipad_radio_off' : 'shape=ellipse', //TODO
+			'Image_ipad_radio_off' : 'ellipse', //TODO
 			'Image_ipad_checkbox_off' : 'absoluteArcSize=1;arcSize=' + arcSize + ';rounded=1', //TODO
 			'Image_ipad_indicator' : 'absoluteArcSize=1;arcSize=' + arcSize + ';rounded=1;fillColor=#e8878E;gradientColor=#BD1421;strokeColor=#ffffff',
 //iOS 6 iPhone Elements
@@ -2729,12 +2730,12 @@ LucidImporter = {};
 			'Image_iphone_arrow_icon' : s + 'ios.iArrowIcon;fillColor=#8BbEff;fillColor2=#135Ec8;strokeColor=#ffffff',
 			'Image_iphone_arrow' : s + 'ios7.misc.more',
 			'Image_iphone_checkmark' : s + 'ios7.misc.check',
-			'Image_iphone_check_off' : 'shape=ellipse', //TODO
-			'Image_iphone_location_dot' : 'shape=ellipse',
-			'Image_iphone_mark_as_read' : 'shape=ellipse',
+			'Image_iphone_check_off' : 'ellipse', //TODO
+			'Image_iphone_location_dot' : 'ellipse',
+			'Image_iphone_mark_as_read' : 'ellipse',
 			'Image_iphone_pin_green' : s + 'ios.iPin;fillColor2=#00dd00;fillColor3=#004400;strokeColor=#006600',
 			'Image_iphone_pin_red' : s + 'ios.iPin;fillColor2=#dd0000;fillColor3=#440000;strokeColor=#660000',
-			'Image_iphone_radio_off' : 'shape=ellipse', //TODO
+			'Image_iphone_radio_off' : 'ellipse', //TODO
 			'Image_iphone_checkbox_off' : '', //TODO
 			'Image_iphone_indicator' : 'fillColor=#e8878E;gradientColor=#BD1421;strokeColor=#ffffff',
 			'Image_iphone_thread_count' : '',
@@ -3324,10 +3325,10 @@ LucidImporter = {};
 			'AWSCloudaltAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud_alt;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fillColor=none',
 			'RegionAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_region;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;dashed=1;fontColor=#0E82B8;fillColor=none',
 			'AvailabilityZoneAWS19_v2' : 'verticalAlign=top;fillColor=none;fillOpacity=100;dashed=1;dashPattern=5 5;fontColor=#0E82B8',
-			'SecuritygroupAWS19_v2' : 'verticalAlign=top;fillColor=none;fillOpacity=100;fontColor=#DD3522',
+			'SecuritygroupAWS19_v2' : 'verticalAlign=top;fillColor=none;fillOpacity=100',
 			'AutoScalingAWS19_v2' : 'shape=mxgraph.aws4.groupCenter;grIcon=mxgraph.aws4.group_auto_scaling_group;grStroke=1;verticalAlign=top;fillColor=none;fillOpacity=100;fontColor=#D75F17;spacingTop=25;fillColor=none',
 			'VirtualprivatecloudVPCAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fontColor=#2C8723;fillColor=none',
-			'PrivateSubnetAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;grStroke=0;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;strokeColor=#0E82B8;fontColor=#0E82B8;fillColor=none',
+			'PrivateSubnetAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;grStroke=0;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;strokeColor=#0E82B8;fillColor=none',
 			'PublicSubnetAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_security_group;grStroke=0;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;strokeColor=#2C8723;fontColor=#2C8723;fillColor=none',
 			'ServercontentsAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_on_premise;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fontColor=#5A6C86;fillColor=none',
 			'CorporatedatacenterAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_corporate_data_center;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fontColor=#5A6C86;fillColor=none',
@@ -3336,7 +3337,7 @@ LucidImporter = {};
 			'SpotFleetAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_spot_fleet;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fontColor=#D75F17;fillColor=none',
 			'AWSStepFunctionAWS19_v2' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_step_functions_workflow;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fontColor=#CB1261;fillColor=none',
 			'GenericGroup1AWS19_v2' : 'verticalAlign=top;align=center;fillColor=none;fillOpacity=100;dashed=1;dashPattern=5 5;strokeColor=#5A6C86;fontColor=#5A6C86',
-			'GenericGroup2AWS19_v2' : 'verticalAlign=top;align=center;fillOpacity=100;fillColor=#EAECEF',
+			'GenericGroup2AWS19_v2' : 'verticalAlign=top;align=center',
 
 			//Repeated from the above
 			'AWSCloudAWS19' : 'shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud;verticalAlign=top;align=left;spacingLeft=30;fillOpacity=100;fillColor=none',
@@ -3739,68 +3740,179 @@ LucidImporter = {};
 //SVG shapes
 			'SVGPathBlock2' : cs,
 //Special cases
-			'PresentationFrameBlock' : cs
+			'PresentationFrameBlock' : cs,
+//Timeline
+//TODO Timeline shapes are postponed, this code is a work-in-progress
+			//'TimelineBlock' : cs,
+			//'TimelineMilestoneBlock' : cs,
+			//'TimelineIntervalBlock' : cs,
+			'MinimalTextBlock' : 'strokeColor=none;fillColor=none',
+//Freehand			
+			'FreehandBlock' : cs,
+//ExtShapes
+			'ExtShapeLaptopBlock': ss + 'citrix.laptop_2;verticalLabelPosition=bottom;verticalAlign=top',
+			'ExtShapeServerBlock': ss + 'citrix.tower_server;verticalLabelPosition=bottom;verticalAlign=top',
+			'ExtShapeCloudBlock': ss + 'citrix.cloud;verticalLabelPosition=bottom;verticalAlign=top',
+			'ExtShapeUserBlock': ss + 'aws3d.end_user;verticalLabelPosition=bottom;verticalAlign=top;fillColor=#073763',
+			'ExtShapeWorkstationLCDBlock': ss + 'veeam.3d.workstation;verticalLabelPosition=bottom;verticalAlign=top'
 	};
 	
 	// actual code start
 	//TODO This can be optimized more
-	function convertTxt2Html(txt, m)
+	function convertTxt2Html(txt, srcM)
 	{
-		var nlPos = [], p = -1, html = '';
+		var blockStyles = {'a': true, 'il': true, 'ir': true, 'mt': true, 'mb': true, 'p': true, 't': true, 'l': true};
+		var nonBlockStyles = {'lk': true, 's': true, 'c': true, 'b': true, 'fc': true, 'i': true, 'u': true};
 
-		while ((p = txt.indexOf('\n', p + 1)) > -1)
-		{
-			nlPos.push(p + 1);
-		}
-
-		m.sort(function(a, b)
+		srcM.sort(function(a, b)
 		{
 			return a.s - b.s;
 		});
-
-		var sMap = {}, ends = [];
-
-		for (var i = 0; i < m.length; i++) //TODO Using newlines to mark the end of blocks without end has some issues 
+		
+		var m = srcM.filter(function(m) 
+		{ 
+			return nonBlockStyles[m.n];
+		});
+		
+		var globalStyles = srcM.filter(function(m)
 		{
-			var item = m[i];
-			
-			if (sMap[item.s] == null)
-			{
-				for (var j = 0; j < nlPos.length; j++)
-				{
-					if (nlPos[j] > item.s)
-					{
-						sMap[item.s] = nlPos[j];
-						break;
-					}
-				}
-
-				if (sMap[item.s] == null)
-				{
-					sMap[item.s] = txt.length;
-				}
-			}
-
-			if (item.e == null)
-			{
-				item.e = sMap[item.s];
-			}
-
-			ends.push(item);
-		}
+			return blockStyles[m.n];
+		});
+		
+		var html = '', ends = m.slice();
 
 		ends.sort(function(a, b)
 		{
 			return a.e - b.e;
 		});
 
-		var i = 0, j = 0, curStyles = {}, openTags = [], openTagsCount = [], listActive = false, listType, listItemActive = false;
+		var i = 0, j = 0, k = 0, curStyles = {}, curBlockStyles = {}, openTags = [], openTagsCount = [], 
+			openBlockTags = [], blockActive = false, listActive = false, listType;
 		
-		function startTag(styles, newBlock)
+		function startBlockTag(styles)
 		{
 			var str = '';
-			var tagCount = 0;
 			var t = styles['t'];
+
+			var l = styles['l'] || {};
+			
+			if (t != null && (listActive == false || listActive != t.v || listType != l.v))
+			{
+				if (listActive)
+				{
+					str += endBlockTag(true);
+				}
+				
+				listActive = t.v;
+				listType = l.v;
+				
+				if (t.v == 'ul')
+				{
+					str += '<ul ';
+					openBlockTags.push('ul');
+				}
+				else
+				{
+					str += '<ol ';
+					openBlockTags.push('ol');
+				}
+				
+				str += 'style="margin: 0px; list-style-type:';
+				
+				if (t.v == 'hl')
+				{
+					str += 'upper-roman';
+				}
+				else
+				{
+					switch(l.v)
+					{
+						case 'auto':
+							str += 'disc';
+							break;
+						case 'inv': //Approx
+							str += 'circle';
+							break;
+						case 'disc': 
+							str += 'circle';
+							break;
+						case 'trib': //Approx
+							str += 'square';
+							break;
+						case 'square':
+							str += 'square';
+							break;	
+						case 'dash': //Approx
+							str += 'square';
+							break;	
+						case 'heart': //Approx
+							str += 'disc';
+							break;
+						default:
+							str += 'decimal';					
+					}
+				}
+				
+				str += '">';
+			}
+			else if (t == null)
+			{
+				if (listActive)
+				{
+					str += endBlockTag(true);
+					listActive = false;
+				}
+
+				str += '<div style="';
+				openBlockTags.push('div');
+			}
+
+			if (t != null)
+			{
+				str += '<li style="text-align:' + (styles['a']? styles['a'].v : 'left') + '>';
+				openBlockTags.push('li');
+				str += '<span style="';
+				openBlockTags.push('span');
+
+			}
+
+			if (!listActive)
+			{
+				str += 'text-align: ' + (styles['a']? styles['a'].v : 'center') + ';';
+			}
+			
+			if (styles['il'])
+			{
+				str += 'margin-left: ' + Math.round(styles['il'].v * scale - (listActive? 21 : 0)) + 'px;';
+			}
+
+			if (styles['ir'])
+			{
+				str += 'margin-right: ' + Math.round(styles['ir'].v * scale) + 'px;';
+			}
+
+			if (styles['mt'])
+			{
+				str += 'margin-top: ' + Math.round(styles['mt'].v * scale) + 'px;';
+			}
+
+			if (styles['mb'])
+			{
+				str += 'margin-bottom: ' + Math.round(styles['mb'].v * scale) + 'px;';
+			}
+
+			str += '">'
+
+			return str;
+		};
+
+		
+		function startTag(styles)
+		{
+			if (Object.keys(styles).length == 0) return '';
+			
+			var str = '';
+			var tagCount = 0;
 
 			if (styles['lk'])
 			{
@@ -3814,107 +3926,9 @@ LucidImporter = {};
 				}
 			}
 			
-			if (newBlock)
-			{
-				var l = styles['l'] || {};
-				
-				if (t != null && (listActive == false || listActive != t.v || listType != l.v))
-				{
-					if (listActive)
-					{
-						str += endTag();
-					}
-					
-					listActive = t.v;
-					listType = l.v;
-					
-					if (t.v == 'ul')
-					{
-						str += '<ul ';
-						openTags.push('ul');
-					}
-					else
-					{
-						str += '<ol ';
-						openTags.push('ol');
-					}
-					
-					openTagsCount.push(1);
-					str += 'style="margin: 0px; text-align:' + (styles['a']? styles['a'].v : 'left') + '; list-style-type:';
-					
-					if (t.v == 'hl')
-					{
-						str += 'upper-roman';
-					}
-					else
-					{
-						switch(l.v)
-						{
-							case 'auto':
-								str += 'disc';
-								break;
-							case 'inv': //Approx
-								str += 'circle';
-								break;
-							case 'disc': 
-								str += 'circle';
-								break;
-							case 'trib': //Approx
-								str += 'square';
-								break;
-							case 'square':
-								str += 'square';
-								break;	
-							case 'dash': //Approx
-								str += 'square';
-								break;	
-							case 'heart': //Approx
-								str += 'disc';
-								break;
-							default:
-								str += 'decimal';					
-						}
-					}
-					
-					str += '">';
-				}
-				else if (t == null)
-				{
-					if (listActive)
-					{
-						str += endTag();
-						listActive = false;
-					}
-
-					str += '<div style="';
-					openTags.push('div');
-					tagCount++;
-				}
-			}
-			else
-			{
-				if (listActive && !listItemActive)
-				{
-					str += endTag();
-					listActive = false;
-				}
-				
-				str += '<span style="';
-				openTags.push('span');
-				tagCount++;
-			}
-
-			if (newBlock && t != null)
-			{
-				listItemActive = true;
-				str += '<li>';
-				openTags.push('li');
-				tagCount++;
-				
-				str += '<span style="';
-				openTags.push('span');
-				tagCount++;
-			}
+			str += '<span style="';
+			openTags.push('span');
+			tagCount++;
 
 			if (styles['s'])
 			{
@@ -3952,33 +3966,29 @@ LucidImporter = {};
 				str += 'text-decoration: underline;';
 			}
 
-			if (!listActive)
-			{
-				str += 'text-align: ' + (styles['a']? styles['a'].v : 'center') + ';';
-			}
-			
-			if (styles['il'])
-			{
-				str += 'margin-left: ' + Math.round(styles['il'].v * scale - (listActive? 21 : 0)) + 'px;';
-			}
-
-			if (styles['ir'])
-			{
-				str += 'margin-right: ' + Math.round(styles['ir'].v * scale) + 'px;';
-			}
-
-			if (styles['mt'])
-			{
-				str += 'margin-top: ' + Math.round(styles['mt'].v * scale) + 'px;';
-			}
-
-			if (styles['mb'])
-			{
-				str += 'margin-bottom: ' + Math.round(styles['mb'].v * scale) + 'px;';
-			}
-
 			str += '">'
 			openTagsCount.push(tagCount);
+
+			return str;
+		};
+
+		function endBlockTag(force)
+		{
+			var str = '';
+			
+			do
+			{
+				var tag = openBlockTags.pop();
+				
+				if (!force && listActive && (tag == 'ul' || tag == 'ol'))
+				{
+					openBlockTags.push(tag);
+					break;
+				}
+				
+				str += '</' + tag + '>';
+			}
+			while(openBlockTags.length > 0);
 
 			return str;
 		};
@@ -3988,9 +3998,9 @@ LucidImporter = {};
 			var str = txt? txt.substring(curS, curE) : '';
 
 			//TODO Check this is always the case. Most of the time this is correct, also, the empty tag should be removed
-			if (str == '\n')
+			if (listActive)
 			{
-				str = '';
+				str = str.trim();
 			}
 			
 			str = str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -4002,68 +4012,108 @@ LucidImporter = {};
 				for (var i = 0; i < count; i++) 
 				{
 					var tag = openTags.pop();
-					
-					if (tag == 'li')
-					{
-						listItemActive = false;
-					}
-					
 					str += '</' + tag + '>';
 				}
 			}
 			while(all && openTags.length > 0);
 
 			return str;
-		}
+		};
 		
-		var curS = 0, curE = 0;
+		var curS = 0, curE = 0, maxE = txt.length, firstBlock = true;
 		
-		while(i >= j && (i < m.length || j < ends.length))
+		while (k < globalStyles.length || firstBlock)
 		{
-			var s = m[i], e = ends[j];
-
-			if (s && e && s.s < e.e) //s can be null when all starts are used, e ends after s BUT sometimes there are errors in the file
+			firstBlock = false;
+			
+			if (k < globalStyles.length)
 			{
-				curS = s.s;
-				var newBlock = false;
-
-				if (curS - curE > 0)
+				var bs = globalStyles[k], curBS = globalStyles[k].s;
+							
+				if (blockActive)
 				{
-					html += startTag(curStyles, newBlock) + endTag(txt, curE, curS); 
+					curBlockStyles = {};
+					html += endTag(txt, maxE, curS, true); //End any open tag
+					curS = maxE;
+					html += endBlockTag(); 
+				}
+		
+				while(bs != null && bs.s == curBS)
+				{
+					curBlockStyles[bs.n] = bs;
+					bs = globalStyles[++k];
 				}
 				
-				while(s != null && s.s == curS)
+				if (bs != null)
 				{
-					//TODO alignment ('a') sometimes introduce unnecessary new lines. Maybe use newline to define block elements
-					if (s.n == 'a' || s.n == 'il' || s.n == 'ir' || s.n == 'mt' || s.n == 'mb' || s.n == 't')
+					maxE = bs.s;
+				}
+				else
+				{
+					maxE = txt.length;
+				}
+				
+				html += startBlockTag(curBlockStyles);
+				
+				if (blockActive)
+				{
+					html += startTag(curStyles);
+				}
+				
+				blockActive = true;
+			}
+			
+			while(i >= j && (i < m.length || j < ends.length))
+			{
+				var s = m[i], e = ends[j];
+	
+				if (s && e && s.s < e.e) //s can be null when all starts are used, e ends after s BUT sometimes there are errors in the file
+				{
+					if (s.s > maxE) break;
+					curS = s.s;
+	
+					if (curS - curE > 0)
 					{
-						newBlock = true;
+						html += endTag(txt, curE, curS); 
 					}
 					
-					curStyles[s.n] = s;
-					s = m[++i];
+					while(s != null && s.s == curS)
+					{
+						curStyles[s.n] = s;
+						s = m[++i];
+					}
+					
+					html += startTag(curStyles);
 				}
-				
-				html += startTag(curStyles, newBlock);
-			}
-			else if (e)
-			{
-				curE = e.e;
-
-				do
+				else if (e)
 				{
-					delete curStyles[e.n];
-					e = ends[++j];
+					if (e.e > maxE) break;
+					curE = e.e;
+	
+					do
+					{
+						delete curStyles[e.n];
+						e = ends[++j];
+					}
+					while(e != null && e.e == curE);
+					
+					html += endTag(txt, curS, curE);
+					curS = curE;
 				}
-				while(e != null && e.e == curE);
-				
-				html += endTag(txt, curS, curE);
-				curS = curE;
+				else
+				{
+					break;
+				}
 			}
 		}
 		
 		html += endTag(null, null, null, true); //End any open tag
-
+		
+		if (blockActive)
+		{
+			html += endBlockTag(true); 
+		}
+					
 		return html;
 	};
 	
@@ -4123,11 +4173,13 @@ LucidImporter = {};
 		}
 		
 		// TODO: Convert text object to HTML. One case is covered. Is there others?
+		// TODO: HTML text conversion looks stable now, maybe convert all using html?
 		if (text != null)
 		{
 			if (text.t != null)
 			{
 				var txt = text.t;
+				txt = txt.replace(/\u2028/g, '\n'); //Special unicide line separator
 				var m = text.m;
 				
 				//Convert text object to HTML if needed
@@ -4135,7 +4187,7 @@ LucidImporter = {};
 				{
 					for (var i = 0; i < m.length; i++)
 					{
-						if (m[i].s > 0)
+						if (m[i].s > 0 || (m[i].e != null && m[i].e < txt.length))
 						{
 							isLastLblHTML = true;
 							break;
@@ -4222,7 +4274,7 @@ LucidImporter = {};
 	
 	function getLabelStyle(properties, noLblStyle)
 	{
-		var style = (noLblStyle? 'overflow=width;html=1;' : 
+		var style = 'whiteSpace=wrap;' + (noLblStyle? 'overflow=width;html=1;' : 
 				getFontSize(properties) +
 				getFontColor(properties) + 
 				getFontStyle(properties) +
@@ -4247,8 +4299,8 @@ LucidImporter = {};
 			s = ';';
 		}
 		
-		s +=	
-		  (noLblStyle? 'overflow=width;html=1;' : 
+		s += 'whiteSpace=wrap;' + 
+		  (noLblStyle? (hasStyle(style, 'overflow')? '' : 'overflow=width;') + (hasStyle(style, 'html')? '' : 'html=1;') : 
 			addStyle(mxConstants.STYLE_FONTSIZE, style, properties, action, cell) +			
 			addStyle(mxConstants.STYLE_FONTCOLOR, style, properties, action, cell) +			
 			addStyle(mxConstants.STYLE_FONTSTYLE, style, properties, action, cell) +		
@@ -4936,6 +4988,10 @@ LucidImporter = {};
 		{
 			return 'dashed=1;dashPattern=10 5 1 5;';
 		}
+		else if (properties.StrokeStyle == 'dashdotdot')
+		{
+			return 'dashed=1;dashPattern=10 5 1 5 1 5;';
+		}
 		else if (properties.StrokeStyle == 'dotdotdot')
 		{
 			return 'dashed=1;dashPattern=1 2;';
@@ -4943,6 +4999,22 @@ LucidImporter = {};
 		else if (properties.StrokeStyle == 'longdash')
 		{
 			return 'dashed=1;dashPattern=16 6;';
+		}
+		else if (properties.StrokeStyle == 'dashlongdash')
+		{
+			return 'dashed=1;dashPattern=10 6 16 6;';
+		}
+		else if (properties.StrokeStyle == 'dashed24')
+		{
+			return 'dashed=1;dashPattern=3 8;';
+		}
+		else if (properties.StrokeStyle == 'dashed32')
+		{
+			return 'dashed=1;dashPattern=6 5;';
+		}
+		else if (properties.StrokeStyle == 'dashed44')
+		{
+			return 'dashed=1;dashPattern=8 8;';
 		}
 		else if (properties.StrokeStyle != null && properties.
 			StrokeStyle.substring(0, 6) == 'dashed')
@@ -4955,20 +5027,36 @@ LucidImporter = {};
 	
 	function getStrokeWidth(properties)
 	{
-		return createStyle(mxConstants.STYLE_STROKEWIDTH, Math.round(parseFloat(properties.LineWidth) * scale), '1');
+		return properties.LineWidth != null? createStyle(mxConstants.STYLE_STROKEWIDTH, Math.round(parseFloat(properties.LineWidth) * scale), '1') : '';
 	}
 	
-	function getImage(properties, action)
+	function getImage(properties, action, url)
 	{
+		var imgUrl = url;
+		
 		// Converts images
 		if (action.Class == 'ImageSearchBlock2')
 		{
-			return 'image=' + properties.URL + ';';
+			imgUrl = properties.URL;
 		}
 		else if (action.Class == 'UserImage2Block' && properties.ImageFillProps != null &&
 				properties.ImageFillProps.url != null)
 		{
-			return 'image=' + properties.ImageFillProps.url  + ';';
+			imgUrl = properties.ImageFillProps.url;
+		}
+		
+		if (imgUrl != null)
+		{
+			if (LucidImporter.imgSrcRepl != null)
+			{
+				for (var i = 0; i < LucidImporter.imgSrcRepl.length; i++)
+				{
+					var repl = LucidImporter.imgSrcRepl[i];
+					imgUrl = imgUrl.replace(repl.searchVal, repl.replVal);
+				}
+			}
+			
+			return 'image=' + imgUrl + ';';
 		}
 		
 		return '';
@@ -5041,10 +5129,27 @@ LucidImporter = {};
 					{
 						tmp = 'filename';
 					}
+					else if (tmp == 'pageName')
+					{
+						tmp = 'page';
+					}
+					else if (tmp == 'totalPages')
+					{
+						tmp = 'pagecount';
+					}
+					else if (tmp == 'page')
+					{
+						tmp = 'pagenumber';
+					}
 					else if (tmp.substring(0, 5) == 'date:')
 					{
 						// LATER: Convert more date masks
-						tmp = 'date{' + tmp.substring(5).replace(/MMMM/g, 'mmmm') + '}';
+						tmp = 'date{' + tmp.substring(5).replace(/MMMM/g, 'mmmm').replace(/YYYY/g, 'yyyy') + '}';
+					}
+					else if (tmp.substring(0, 16) == 'lastModifiedTime')
+					{
+						// LATER: Convert more date masks
+						tmp = tmp.replace(/MMMM/g, 'mmmm').replace(/YYYY/g, 'yyyy');
 					}
 					else if (tmp.substring(0, 9) == 'i18nDate:')
 					{
@@ -5111,6 +5216,15 @@ LucidImporter = {};
 				
 				addCustomData(cell, p, graph);
 				
+				if (p.Title && p.Text && a.Class.substr(0, 8) != 'ExtShape')
+				{
+					var geo = cell.geometry;
+					var title = new mxCell(convertText(p.Title), new mxGeometry(0, geo.height,geo.width, 10), 'strokeColor=none;fillColor=none;');
+					title.vertex = true;
+					cell.insert(title);
+					title.style += getLabelStyle(p.Title, isLastLblHTML);
+				}
+				
 				// Edge style
 				if (cell.edge)
 				{
@@ -5125,7 +5239,7 @@ LucidImporter = {};
 					
 					if (p.Shape != 'diagonal')
 					{
-						if (p.ElbowPoints != null)
+						if (p.ElbowPoints != null && p.ElbowPoints.length > 0)
 						{
 							cell.geometry.points = [];
 							
@@ -5138,14 +5252,7 @@ LucidImporter = {};
 						}
 						else if (p.Shape == 'elbow')
 						{
-							if (p.Endpoint1.Block != null && p.Endpoint2.Block != null)
-							{
-								cell.style += 'edgeStyle=orthogonalEdgeStyle;';
-							}
-							else
-							{
-								cell.style += 'edgeStyle=elbowEdgeStyle;';
-							}
+							cell.style += 'edgeStyle=orthogonalEdgeStyle;';
 						}
 						else if (p.Endpoint1.Block != null && p.Endpoint2.Block != null)
 						{
@@ -5188,7 +5295,8 @@ LucidImporter = {};
 						}
 					}
 
-					var waypoints = p.ElbowControlPoints || p.Joints;
+					var waypoints = p.ElbowControlPoints != null && p.ElbowControlPoints.length > 0? p.ElbowControlPoints : 
+						(p.BezierJoints != null && p.BezierJoints.length > 0? p.BezierJoints : p.Joints);
 					
 					if (waypoints != null)
 					{
@@ -5196,7 +5304,7 @@ LucidImporter = {};
 						
 						for (var i = 0; i < waypoints.length; i++)
 						{
-							var pt = waypoints[i];
+							var pt = waypoints[i].p ? waypoints[i].p : waypoints[i];
 							
 							cell.geometry.points.push(new mxPoint(
 								Math.round(pt.x * scale + dx),
@@ -5219,7 +5327,10 @@ LucidImporter = {};
 							dx = (exit.x == entry.x) ? 20 : 0;
 							dy = (exit.y == entry.y) ? 0 : 0;
 							
-							cell.geometry.points = [new mxPoint(exit.x + dx, exit.y + dy), new mxPoint(entry.x + dx, entry.y + dy)];
+							var p1 = new mxPoint(exit.x + dx, exit.y + dy), p2 = new mxPoint(entry.x + dx, entry.y + dy);
+							p1.generated = true;
+							p2.generated = true;
+							cell.geometry.points = [p1, p2];
 							implicitX = (exit.y == entry.y);
 							implicitY = (exit.x == entry.x);
 						}
@@ -5240,7 +5351,8 @@ LucidImporter = {};
 	
 	function createVertex(obj, graph)
 	{
-		var p = getAction(obj).Properties;
+		var a = getAction(obj);
+		var p = a.Properties;
 		var b = p.BoundingBox;
 
 		if (obj.Class != null && (obj.Class.substring(0, 3) === "AWS" || obj.Class.substring(0, 6) === "Amazon" ) && !obj.Class.includes('AWS19'))
@@ -5253,23 +5365,16 @@ LucidImporter = {};
 	    v.vertex = true;
 	    updateCell(v, obj, graph);
 	    
+	    //Store z-order to use it in groups
+		v.zOrder = p.ZOrder;
+	    
 	    //FillOpacity affects icon also, so create a parent as a background color
 	    if (v != null && v.style.indexOf(';grIcon=') >= 0)
     	{
 	    	var parent = new mxCell('', new mxGeometry(v.geometry.x, v.geometry.y,
 	    			v.geometry.width, v.geometry.height), vertexStyle);
 	    	parent.vertex = true;
-	    	var a = getAction(obj);
-			
-			if (a != null)
-			{
-				var p = (a.Properties != null) ? a.Properties : a;
-
-				if (p != null)
-				{
-					parent.style += addAllStyles(parent.style, p, a, parent);
-				}
-			}
+			parent.style += addAllStyles(parent.style, p, a, parent);
 			
 		    v.geometry.x = 0;
 		    v.geometry.y = 0;
@@ -5277,6 +5382,8 @@ LucidImporter = {};
 		    parent.insert(v);
 		    v = parent;
     	}
+	    
+	    handleTextRotation(v, p);
 	    
 	    return v;
 	};
@@ -5417,54 +5524,52 @@ LucidImporter = {};
 		}
 	};
 
-	var hideObj = function(key, groups, hidden)
-	{
-		if (mxUtils.indexOf(hidden, key) < 0)
-		{
-			hidden.push(key);
-		}
-
-		if (key in groups)
-		{
-			var obj = groups[key];
-			obj.id = key;
-			
-			if (obj.Members != null)
-			{
-				for (var key2 in obj.Members)
-				{
-					hidden = hideObj(key2, groups, hidden);
-				}
-			}
-		
-		}
-		
-		return hidden;
-	};
-	
-	function createGroup(obj, lookup)
+	function createGroup(obj, lookup, edgesGroups)
 	{
 		try
 		{
+			if (obj.Action != null && obj.Action.Properties != null)
+			{
+				obj = obj.Action.Properties;
+			}
+			
 			var group = new mxCell('', new mxGeometry(), 'group;dropTarget=0;');
 			group.vertex = true;
 			var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-			var members = obj.Members || obj.Action.Properties.Members;
-				
+			var members = obj.Members, memberCells = [];
+			
 			for (var key in members)
 			{
 				var v = lookup[key];
 				
 				if (v != null)
 				{
-					minX = Math.min(minX, v.geometry.x);
-					minY = Math.min(minY, v.geometry.y);
-					maxX = Math.max(maxX, v.geometry.x + v.geometry.width);
-					maxY = Math.max(maxY, v.geometry.y + v.geometry.height);
+					memberCells.push(v);
 				}
+				else
+				{
+					//Edges are not yet created, so, create a map for them
+					edgesGroups[key] = group;
+				}
+			}
+			
+			memberCells.sort(function(a, b)
+			{
+				var ai = a.zOrder;
+				var bi = b.zOrder;
 				
+				return (ai != null && bi != null) ? ai - bi : 0;
+			});
+			
+			for (var i = 0; i < memberCells.length; i++)
+			{
+				var v = memberCells[i];
+				minX = Math.min(minX, v.geometry.x);
+				minY = Math.min(minY, v.geometry.y);
+				maxX = Math.max(maxX, v.geometry.x + v.geometry.width);
+				maxY = Math.max(maxY, v.geometry.y + v.geometry.height);
 				v.parent = group;
-				group.insert(v);
+				group.insert(v, i);
 			}
 			
 			group.geometry.x = minX;
@@ -5472,11 +5577,27 @@ LucidImporter = {};
 			group.geometry.width = maxX - minX;
 			group.geometry.height = maxY - minY;
 			
-			for (var i = 0; i < group.children.length; i++)
+			if (group.children != null)
 			{
-				var geo = group.children[i].geometry;
-				geo.x -= minX;
-				geo.y -= minY;
+				for (var i = 0; i < group.children.length; i++)
+				{
+					var geo = group.children[i].geometry;
+					geo.x -= minX;
+					geo.y -= minY;
+				}
+			}
+			
+			if (obj.IsState)
+			{
+				group.lucidLayerInfo = {
+					name: obj.Name,
+					visible: !obj.Hidden,
+					locked: obj.Restrictions.b && obj.Restrictions.p && obj.Restrictions.c
+				};
+			}
+			else if (obj.Hidden)
+			{
+				group.visible = false;
 			}
 			
 			return group;
@@ -5487,41 +5608,16 @@ LucidImporter = {};
 		}
 	};
 	
-	function importLucidPage(graph, g, dx, dy, crop, noSelection)
+	function importLucidPage(graph, g, noSelection)
 	{
 		graph.getModel().beginUpdate();
 		try
 		{
 			var select = [];
 			var lookup = {};
+			var edgesGroups = {};
 			var queue = [];
 
-			//collect IDs that are part of groups and hidden
-			var hidden = [];
-			var i = 0;
-			
-			if (g.Groups != null)
-			{
-				for (var key in g.Groups)
-				{
-					var obj = g.Groups[key];
-					obj.id = key;
-					
-					if (obj.Hidden == true && obj.Members != null)
-					{
-						if (mxUtils.indexOf(hidden, key) < 0)
-						{
-							hidden.push(key);
-						}
-
-						for (var key2 in obj.Members)
-						{
-							hidden = hideObj(key2, g.Groups, hidden);
-						}
-					}
-				}
-			}
-			
 			// Vertices first (populates lookup table for connecting edges)
 			if (g.Blocks != null)
 			{
@@ -5530,25 +5626,22 @@ LucidImporter = {};
 					var obj = g.Blocks[key];
 					obj.id = key;
 					
-					if (mxUtils.indexOf(hidden, key) < 0)
+					var created = false;
+					
+					if (styleMap[obj.Class] != null)
 					{
-						var created = false;
-						
-						if (styleMap[obj.Class] != null)
+						if (styleMap[obj.Class] == 'mxCompositeShape')
 						{
-							if (styleMap[obj.Class] == 'mxCompositeShape')
-							{
-								lookup[obj.id] = addCompositeShape(obj, select, graph);
-								queue.push(obj);
-								created = true;
-							}
-						}
-						
-						if (!created)
-						{
-							lookup[obj.id] = createVertex(obj, graph);
+							lookup[obj.id] = addCompositeShape(obj, select, graph);
 							queue.push(obj);
+							created = true;
 						}
+					}
+					
+					if (!created)
+					{
+						lookup[obj.id] = createVertex(obj, graph);
+						queue.push(obj);
 					}
 				}
 			}
@@ -5584,7 +5677,7 @@ LucidImporter = {};
 					
 					if (obj.IsGroup)
 					{
-						var group = createGroup(obj, lookup);
+						var group = createGroup(obj, lookup, edgesGroups);
 						
 						if (group)
 						{
@@ -5595,7 +5688,7 @@ LucidImporter = {};
 				}
 			}
 			
-			//Create non-hidden groups
+			//Create groups
 			if (g.Groups != null)
 			{
 				try
@@ -5605,15 +5698,12 @@ LucidImporter = {};
 						var obj = g.Groups[key];
 						obj.id = key;
 
-						if (obj.Hidden == 0 && obj.Members != null)
+						var group = createGroup(obj, lookup, edgesGroups);
+						
+						if (group)
 						{
-							var group = createGroup(obj, lookup);
-							
-							if (group)
-							{
-								lookup[obj.id] = group;
-								queue.push(obj);	
-							}
+							lookup[obj.id] = group;
+							queue.push(obj);	
 						}
 					}
 				}
@@ -5627,13 +5717,10 @@ LucidImporter = {};
 			{
 				for (var key in g.Lines)
 				{
-					if (mxUtils.indexOf(hidden, key) < 0)
-					{
-						var obj = g.Lines[key];
-						obj.id = key;
-						
-						queue.push(obj);
-					}
+					var obj = g.Lines[key];
+					obj.id = key;
+					
+					queue.push(obj);
 				}
 			}
 			
@@ -5667,7 +5754,36 @@ LucidImporter = {};
 						Math.round(p.Endpoint2.y * scale)), false);
 				}
 				
-				select.push(graph.addCell(e, null, null, src, trg));
+				var group = edgesGroups[obj.id];
+				
+				function fixPoint(p, pgeo)
+				{
+					if (p != null && !p.generated)
+					{
+						p.x -= pgeo.x;
+						p.y -= pgeo.y;
+					}
+				};
+				
+				if (group != null)
+				{
+					//Correct edge geometry
+					var geo = e.geometry, pgeo = group.geometry;
+					fixPoint(geo.sourcePoint, pgeo);
+					fixPoint(geo.targetPoint, pgeo);
+					fixPoint(geo.offset, pgeo);
+                    var points = geo.points;
+                    
+                    if (points != null) 
+                    {
+                        for (var i = 0; i < points.length; i++) 
+                        {
+                        	fixPoint(points[i], pgeo);
+                        }
+                    }
+				}
+				
+				select.push(graph.addCell(e, group, null, src, trg));
 			};
 			
 			// Inserts cells in ZOrder and connects edges via lookup
@@ -5680,7 +5796,26 @@ LucidImporter = {};
 				{
 					if (v.parent == null)
 					{
-						select.push(graph.addCell(v));
+						if (v.lucidLayerInfo)
+						{
+							var layerCell = new mxCell();
+					        graph.addCell(layerCell, graph.model.root);
+					        
+					        layerCell.setVisible(v.lucidLayerInfo.visible);
+
+					        if (v.lucidLayerInfo.locked)
+					        {
+					            layerCell.setStyle("locked=1;");
+					        }
+					        
+					        layerCell.setValue(v.lucidLayerInfo.name);
+					        delete v.lucidLayerInfo;
+					        graph.addCell(v, layerCell);
+						}
+						else
+						{
+							select.push(graph.addCell(v));
+						}
 					}
 				}
 				else if (obj.IsLine && obj.Action != null && obj.Action.Properties != null)
@@ -5691,22 +5826,6 @@ LucidImporter = {};
 				else if (obj.StrokeStyle != null)
 				{
 					addLine(obj, obj);
-				}
-			}
-
-			if (crop && dx != null && dy != null)
-			{
-				if (graph.isGridEnabled())
-				{
-					dx = graph.snap(dx);
-					dy = graph.snap(dy);
-				}
-				
-				var bounds = graph.getBoundingBoxFromGeometry(select, true);
-				
-				if (bounds != null)
-				{
-					graph.moveCells(select, dx - bounds.x, dy - bounds.y);
 				}
 			}
 
@@ -5731,9 +5850,169 @@ LucidImporter = {};
         graph.getModel().maintainEdgeParent = false;
         return graph;
 	};
-	
-	LucidImporter.importState = function(state)
+
+	//Code adopted from vsdx importer
+
+	/**
+	 * Holds the NURBS array that is part of the VSDX NURBSTo element, together with some helper functions
+	 */
+    function Nurbs(x1, y1, n1x, n1y, x2, y2, n2x, n2y)
 	{
+        this.nurbsValues = [1, 3, 0, 0, 
+			(x1 + n1x) * 100,
+			100 - (1 - (y1 + n1y)) * 100,
+			0, 1,
+			(x2 + n2x) * 100,
+			100 - (1 - (y2 + n2y)) * 100,
+			0, 1
+		];
+    }
+    /**
+     * @return {number} number of points, not including the last one (which is outside of the nurbs string)
+     */
+    Nurbs.prototype.getSize = function () {
+        return (((this.nurbsValues.length / 4 | 0)) - 1);
+    };
+    /**
+     * @return {number} the i-th X coordinate
+     * @param {number} i
+     */
+    Nurbs.prototype.getX = function (i) {
+        return Math.round(this.nurbsValues[(i + 1) * 4] * 100.0) / 100.0;;
+    };
+    /**
+     * @return {number} the i-th Y coordinate
+     * @param {number} i
+     */
+    Nurbs.prototype.getY = function (i) {
+        return Math.round(this.nurbsValues[(i + 1) * 4 + 1] * 100.0) / 100.0;;
+    };
+
+	//A: 0, B: 1, C: 0, D: 1 
+	function NURBSTo(x, y, w, h, px1, py1, n1x, n1y, px2, py2, n2x, n2y) 
+	{
+        var nurbs = new Nurbs(px1, py1, n1x, n1y, px2, py2, n2x, n2y);
+
+        if (nurbs.getSize() >= 2) 
+		{
+            var x1 = nurbs.getX(0);
+            var y1 = nurbs.getY(0);
+            var x2 = nurbs.getX(1);
+            var y2 = nurbs.getY(1);
+            y = y * 100.0 / h;
+            x = x * 100.0 / w;
+            x = Math.round(x * 100.0) / 100.0;
+            y = Math.round(y * 100.0) / 100.0;
+
+            var cp1 = ([]);
+            var cp2 = ([]);
+            var nut = ([]);
+            var nurbsize = nurbs.getSize();
+            
+			for (var i = 0; i < nurbsize - 1; i = i + 3) 
+			{
+                cp1.push(new mxPoint(nurbs.getX(i), nurbs.getY(i)));
+                cp2.push(new mxPoint(nurbs.getX(i + 1), nurbs.getY(i + 1)));
+                
+				if (i < nurbsize - 2) {
+                    nut.push(new mxPoint(nurbs.getX(i + 2), nurbs.getY(i + 2)));
+                }
+                else {
+                    nut.push(new mxPoint(x, y));
+                }
+            }
+            
+            var result = "";
+            for (var i = 0; i < cp1.length; i++) {
+                result += "<curve x1=\"" + cp1[i].x + "\" y1=\"" + cp1[i].y + "\" x2=\"" + cp2[i].x + "\" y2=\"" + cp2[i].y + "\" x3=\"" + nut[i].x + "\" y3=\"" + nut[i].y + "\"/>";
+            }
+            
+            return result;
+        }
+    };
+
+	function addStencil(id, obj)
+	{
+		try
+		{
+			var stencils = [];
+			var w = obj.BoundingBox.w;
+			var h = obj.BoundingBox.h;
+			
+			for (var i = 0; i < obj.Shapes.length; i++)
+			{
+				var shape = obj.Shapes[i];
+				var fillClr = shape.FillColor;
+				var strokeClr = shape.StrokeColor;
+				var lineW = shape.LineWidth;
+				var points = shape.Points;
+				var lines = shape.Lines;
+				var parts = ["<shape strokewidth=\"inherit\"><foreground>"];
+				parts.push("<path>");
+				var lastP = null;
+				
+				for (var j = 0; j < lines.length; j++)
+				{
+					var line = lines[j];
+					
+					if (lastP != line.p1) //Add move to when last point is different from current first poinnt
+					{
+						var x = points[line.p1].x, y = points[line.p1].y;
+						x = x * 100.0 / w;
+						y = y * 100.0 / h;
+						x = Math.round(x * 100.0) / 100.0;
+						y = Math.round(y * 100.0) / 100.0;
+						parts.push("<move x=\"" + x + "\" y=\"" + y + "\"/>");
+					}
+					
+					if (line.n1 != null) // Curve
+					{
+						var curve =  NURBSTo(points[line.p2].x, points[line.p2].y, w, h, 
+								points[line.p1].x, points[line.p1].y, line.n1.x, line.n1.y, 
+								points[line.p2].x, points[line.p2].y, line.n2.x, line.n2.y);
+						parts.push(curve);
+					}
+					else //line
+					{
+						var x = points[line.p2].x, y = points[line.p2].y;
+						x = x * 100.0 / w;
+						y = y * 100.0 / h;
+						x = Math.round(x * 100.0) / 100.0;
+						y = Math.round(y * 100.0) / 100.0;
+						parts.push("<line x=\"" + x + "\" y=\"" + y + "\"/>");
+					}
+					
+					lastP = line.p2;
+				}
+				
+				parts.push("</path>");
+				parts.push("<fillstroke/>");
+				parts.push("</foreground></shape>");
+				stencils.push({
+					shapeStencil: "stencil(" + Graph.compress(parts.join('')) + ")",
+					FillColor: fillClr,
+					LineColor: strokeClr,
+					LineWidth: lineW,
+				});
+			}
+
+			LucidImporter.stencilsMap[id] = {
+				text: obj.Text,
+				w: w,
+				h: h,
+				stencils: stencils
+			};
+		}
+		catch(e)
+		{
+			console.log('Stencil parsing error:', e);
+		}	
+	};
+	
+	LucidImporter.importState = function(state, imgSrcRepl)
+	{
+		LucidImporter.stencilsMap = {}; //Reset stencils cache
+		LucidImporter.imgSrcRepl = imgSrcRepl; //Use LucidImporter object to store the map since it is used deep inside
 		var xml = ['<?xml version=\"1.0\" encoding=\"UTF-8\"?>', '<mxfile>'];
 		
 		// Extracts and sorts all pages
@@ -5741,6 +6020,18 @@ LucidImporter = {};
 
 		function addPages(obj)
 		{
+			//Build stencils map 
+			if (obj.Properties)
+			{
+				for (var key in obj.Properties)
+				{
+					if (key.substr(0, 8) == 'Stencil-')
+					{
+						addStencil(key.substr(8), obj.Properties[key]);
+					}
+				}
+			}
+			
 			for (var id in obj.Pages)
 			{
 				pages.push(obj.Pages[id]);
@@ -5794,7 +6085,7 @@ LucidImporter = {};
             }
             
             xml.push(' id="' + i + '"'); //Add page ids in case it is needed in aspects
-			importLucidPage(graph, pages[i], null, null, null, true);
+			importLucidPage(graph, pages[i], true);
             var node = codec.encode(graph.getModel());
             graph.getModel().clear();
 
@@ -5802,6 +6093,7 @@ LucidImporter = {};
 		}
 		
 		xml.push('</mxfile>');
+		LucidImporter.imgSrcRepl = null; //Reset the map so it doesn't affect next calls
 		
 		return xml.join('');
 	};
@@ -5945,6 +6237,9 @@ LucidImporter = {};
 		v = new mxCell('', new mxGeometry(x, y, w, h), vertexStyle);
 	    v.vertex = true;
 
+	    //Store z-order to use it in groups
+		v.zOrder = p.ZOrder;
+		
 	    var cls = (obj.Class != null) ? obj.Class : (a != null) ? a.Class : null;
 	    
 	    //composite shapes
@@ -6296,7 +6591,7 @@ LucidImporter = {};
 					var keyboard = null;
 					var statusBar = null;
 					
-					if (p.AndroidDeviceName == 'Tablet' || p.AndroidDeviceName == 'Mini Tablet')
+					if (p.AndroidDeviceName == 'Tablet' || p.AndroidDeviceName == 'Mini Tablet' ||  (p.AndroidDeviceName == 'custom' && p.CustomDeviceType == 'Tablet'))
 					{
 						v.style += "shape=mxgraph.android.tab2;"
 						background = new mxCell('', new mxGeometry(w * 0.112, h * 0.077, w * 0.77, h * 0.85), '');
@@ -6311,7 +6606,7 @@ LucidImporter = {};
 							statusBar = new mxCell('', new mxGeometry(w * 0.112, h * 0.077, w * 0.77, h * 0.03), 'shape=mxgraph.android.statusBar;strokeColor=#33b5e5;fillColor=#000000;fontColor=#33b5e5;fontSize=' + h * 0.015 + ';');
 						}
 					}
-					else if (p.AndroidDeviceName == 'Large Phone' || p.AndroidDeviceName == 'Phone')
+					else if (p.AndroidDeviceName == 'Large Phone' || p.AndroidDeviceName == 'Phone' ||  (p.AndroidDeviceName == 'custom' && p.CustomDeviceType == 'Phone'))
 					{
 						v.style += "shape=mxgraph.android.phone2;"
 						background = new mxCell('', new mxGeometry(w * 0.04, h * 0.092, w * 0.92, h * 0.816), '');
@@ -6854,14 +7149,14 @@ LucidImporter = {};
 				
 				if (p.Checked)
 				{
-					dot = new mxCell('', new mxGeometry(w * 0.15, h * 0.15, w * 0.7, h * 0.7), 'shape=ellipse;fillColor=#33B5E5;strokeWidth=1;');
+					dot = new mxCell('', new mxGeometry(w * 0.15, h * 0.15, w * 0.7, h * 0.7), 'ellipse;fillColor=#33B5E5;strokeWidth=1;');
 					dot.vertex = true;
 					v.insert(dot);
 				}
 
 				if (p.Scheme == 'Dark')
 				{
-					v.style += 'shape=ellipse;strokeWidth=1;strokeColor=#272727;';
+					v.style += 'shape=ellipse;perimeter=ellipsePerimeter;strokeWidth=1;strokeColor=#272727;';
 					
 					if (p.Checked)
 					{
@@ -6875,7 +7170,7 @@ LucidImporter = {};
 				}
 				else
 				{
-					v.style += 'shape=ellipse;strokeWidth=1;fillColor=#ffffff;strokeColor=#5C5C5C;';
+					v.style += 'shape=ellipse;perimeter=ellipsePerimeter;strokeWidth=1;fillColor=#ffffff;strokeColor=#5C5C5C;';
 					
 					if (p.Checked)
 					{
@@ -7800,6 +8095,14 @@ LucidImporter = {};
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				break;
 			case 'UMLComponentBoxBlock' :
+				v.value = convertText(p);
+				v.style = 'html=1;dropTarget=0;' + addAllStyles(v.style, p, a, v, isLastLblHTML);
+				
+				var icon = new mxCell('', new mxGeometry(1, 0, 15, 15), 'shape=component;jettyWidth=8;jettyHeight=4;');
+				icon.geometry.relative = true;
+				icon.geometry.offset = new mxPoint(-20, 5);
+				icon.vertex = true;
+				v.insert(icon);
 				break;
 			case 'BPMNActivity' :
 				v.value = convertText(p.Text);
@@ -8130,7 +8433,7 @@ LucidImporter = {};
 
 				break;
 			case 'BPMNGateway' :
-				v.style += 'shape=mxgraph.bpmn.shape;perimeter=rhombusPerimeter;background=gateway;'; 
+				v.style += 'shape=mxgraph.bpmn.shape;perimeter=rhombusPerimeter;background=gateway;verticalLabelPosition=bottom;verticalAlign=top;'; 
 				
 				switch (p.bpmnGatewayType)
 				{
@@ -8161,7 +8464,8 @@ LucidImporter = {};
 				}
 				
 				v.style += addAllStyles(v.style, p, a, v);
-				
+				v.value = convertText(p.Text);
+				v.style += getLabelStyle(p, isLastLblHTML);
 				break;
 			case 'BPMNData' :
 				v.style += 'shape=note;size=14;'; 
@@ -8543,7 +8847,7 @@ LucidImporter = {};
 				v.value = 'FIFO';
 				break;
 			case 'VSMGoSeeProductionBlock' :
-				v.style += 'shape=ellipse;';
+				v.style += 'shape=ellipse;perimeter=ellipsePerimeter;';
 				v.value = convertText(p.Text);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
@@ -8724,7 +9028,7 @@ LucidImporter = {};
 			case 'NET_RingNetwork' :
 				v.style += 'strokeColor=none;fillColor=none;';
 				
-			   	var cell = new mxCell('', new mxGeometry(w * 0.25, h * 0.25, w * 0.5, h * 0.5), 'html=1;shape=ellipse;perimeter=ellipsePerimeter;strokeColor=#29AAE1;strokeWidth=2;');
+			   	var cell = new mxCell('', new mxGeometry(w * 0.25, h * 0.25, w * 0.5, h * 0.5), 'ellipse;html=1;strokeColor=#29AAE1;strokeWidth=2;');
 			   	cell.vertex = true;
 			   	v.insert(cell);
 			   	var cells = [cell];
@@ -8883,7 +9187,7 @@ LucidImporter = {};
 				v.value = convertText(p.Text);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
-				var item1 = new mxCell('', new mxGeometry(0, 0, 17, 17), 'shape=ellipse;fillColor=#808080;part=1;');
+				var item1 = new mxCell('', new mxGeometry(0, 0, 17, 17), 'ellipse;fillColor=#808080;part=1;');
 				item1.vertex = true;
 				v.insert(item1);
 				item1.style += addAllStyles(item1.style, p, a, item1);
@@ -9054,7 +9358,7 @@ LucidImporter = {};
 				v.value = convertText(p.Text);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
-				var item1 = new mxCell('', new mxGeometry(w * 0.04, h * 0.06, w * 0.18, h * 0.28), 'shape=ellipse;fillColor=#808080;part=1;');
+				var item1 = new mxCell('', new mxGeometry(w * 0.04, h * 0.06, w * 0.18, h * 0.28), 'ellipse;fillColor=#808080;part=1;');
 				item1.vertex = true;
 				v.insert(item1);
 				item1.style += addAllStyles(item1.style, p, a, item1);
@@ -9080,7 +9384,7 @@ LucidImporter = {};
 				edge1.geometry.points = wp;
 				select.push(graph.addCell(edge1, null, null, null, null));
 	
-				var item3 = new mxCell('', new mxGeometry(w * 0.6, h * 0.06, w * 0.18, h * 0.28), 'shape=ellipse;fillColor=#808080;part=1;');
+				var item3 = new mxCell('', new mxGeometry(w * 0.6, h * 0.06, w * 0.18, h * 0.28), 'ellipse;fillColor=#808080;part=1;');
 				item3.vertex = true;
 				v.insert(item3);
 				item3.style += 
@@ -9302,7 +9606,7 @@ LucidImporter = {};
 				v.value = convertText(p.Text);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
-				var item1 = new mxCell('', new mxGeometry(0, 0, 17, 17), 'shape=ellipse;fillColor=#808080;part=1;');
+				var item1 = new mxCell('', new mxGeometry(0, 0, 17, 17), 'ellipse;fillColor=#808080;part=1;');
 				item1.vertex = true;
 				v.insert(item1);
 				item1.style += addAllStyles(item1.style, p, a, item1);
@@ -9415,7 +9719,7 @@ LucidImporter = {};
 				
 				for (var i = 0; i < p.LightCount; i++)
 				{
-					item2[i] = new mxCell('', new mxGeometry(lightOffset + lightW * i + (lightW - trueW) / 2, h * 0.25, trueW, h * 0.75), 'part=1;shape=ellipse;');
+					item2[i] = new mxCell('', new mxGeometry(lightOffset + lightW * i + (lightW - trueW) / 2, h * 0.25, trueW, h * 0.75), 'ellipse;part=1;');
 					item2[i].vertex = true;
 					v.insert(item2[i]);
 					item2[i].style += addAllStyles(item2[i].style, p, a, item2[i]);
@@ -9697,7 +10001,7 @@ LucidImporter = {};
 				
 			case 'PEMotorDrivenTurbineBlock' :
 				
-				v.style += 'shape=ellipse;'; 
+				v.style += 'shape=ellipse;perimeter=ellipsePerimeter;'; 
 				v.value = convertText(p.Text);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
@@ -10007,7 +10311,7 @@ LucidImporter = {};
 				item1.style += getLabelStyle(p.Title, isLastLblHTML);
 				item1.style += addAllStyles(item1.style, p, a, item1, isLastLblHTML);
 				
-				var item2 = new mxCell('', new mxGeometry(1, 0.5, 20, 20), 'part=1;shape=ellipse;strokeColor=#008cff;resizable=0;fillColor=none;html=1;');
+				var item2 = new mxCell('', new mxGeometry(1, 0.5, 20, 20), 'ellipse;part=1;strokeColor=#008cff;resizable=0;fillColor=none;html=1;');
 			   	item2.geometry.relative = true;
 			   	item2.geometry.offset = new mxPoint(-25, -10);
 				item2.vertex = true;
@@ -10557,7 +10861,7 @@ LucidImporter = {};
 				
 				for (var i = 0; i < p.Options; i++)
 				{
-					item1[i] = new mxCell('', new mxGeometry(0, i * itemH + itemH * 0.5 - 5, 10, 10), 'shape=ellipse;labelPosition=right;part=1;verticalLabelPosition=middle;align=left;verticalAlign=middle;spacingLeft=3;');
+					item1[i] = new mxCell('', new mxGeometry(0, i * itemH + itemH * 0.5 - 5, 10, 10), 'ellipse;labelPosition=right;part=1;verticalLabelPosition=middle;align=left;verticalAlign=middle;spacingLeft=3;');
 					item1[i].vertex = true;
 					v.insert(item1[i]);
 					item1[i].value = convertText(p['Option_' + (i + 1)]);
@@ -10577,7 +10881,7 @@ LucidImporter = {};
 								fc = 'fillColor=#000000;'
 							}
 							
-							item2[i] = new mxCell('', new mxGeometry(2.5, 2.5, 5, 5), 'shape=ellipse;');
+							item2[i] = new mxCell('', new mxGeometry(2.5, 2.5, 5, 5), 'ellipse;');
 							item2[i].vertex = true;
 							item1[i].insert(item2[i]);
 							item2[i].style += fc; 
@@ -10596,7 +10900,7 @@ LucidImporter = {};
 				
 				for (var i = 0; i < p.Options; i++)
 				{
-					item1[i] = new mxCell('', new mxGeometry(i * itemW, h * 0.5 - 5, 10, 10), 'shape=ellipse;labelPosition=right;part=1;verticalLabelPosition=middle;align=left;verticalAlign=middle;spacingLeft=3;');
+					item1[i] = new mxCell('', new mxGeometry(i * itemW, h * 0.5 - 5, 10, 10), 'ellipse;labelPosition=right;part=1;verticalLabelPosition=middle;align=left;verticalAlign=middle;spacingLeft=3;');
 					item1[i].vertex = true;
 					v.insert(item1[i]);
 					item1[i].value = convertText(p['Option_' + (i + 1)]);
@@ -10616,7 +10920,7 @@ LucidImporter = {};
 								fc = 'fillColor=#000000;'
 							}
 							
-							item2[i] = new mxCell('', new mxGeometry(2, 2, 6, 6), 'shape=ellipse;part=1;');
+							item2[i] = new mxCell('', new mxGeometry(2, 2, 6, 6), 'ellipse;part=1;');
 							item2[i].vertex = true;
 							item1[i].insert(item2[i]);
 							item2[i].style += fc; 
@@ -10918,7 +11222,7 @@ LucidImporter = {};
 					{
 						if (p.Icons[(i + 1)] == 'dot')
 						{
-							icon[i] = new mxCell('', new mxGeometry(0, 0.5, 8, 8), 'shape=ellipse;strokeColor=none;');
+							icon[i] = new mxCell('', new mxGeometry(0, 0.5, 8, 8), 'ellipse;strokeColor=none;');
 							icon[i].geometry.offset = new mxPoint(6, -4);
 						}
 						else if (p.Icons[(i + 1)] == 'check')
@@ -10992,7 +11296,7 @@ LucidImporter = {};
 				break;
 			case 'UI2CalloutBlock' :
 				v.value = convertText(p.Txt);
-				v.style += 'shape=ellipse;' +
+				v.style += 'shape=ellipse;perimeter=ellipsePerimeter;' +
 					getLabelStyle(p.Txt, isLastLblHTML);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
 				
@@ -11012,7 +11316,7 @@ LucidImporter = {};
 					getLabelStyle(p.Title, isLastLblHTML);
 				item1.style += addAllStyles(item1.style, p, a, item1, isLastLblHTML);
 				
-				var item2 = new mxCell('', new mxGeometry(1, 0.5, 20, 20), 'part=1;shape=ellipse;strokeColor=#008cff;resizable=0;fillColor=none;html=1;');
+				var item2 = new mxCell('', new mxGeometry(1, 0.5, 20, 20), 'ellipse;part=1;strokeColor=#008cff;resizable=0;fillColor=none;html=1;');
 			   	item2.geometry.relative = true;
 			   	item2.geometry.offset = new mxPoint(-25, -10);
 				item2.vertex = true;
@@ -11053,7 +11357,7 @@ LucidImporter = {};
 					}
 					
 					v.value = convertText(p.Title);
-					v.style += 'swimlane;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;' + st +
+					v.style += 'swimlane;childLayout=stackLayout;horizontal=1;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;' + st +
 						'startSize=' + th + ';' +
 						getLabelStyle(p.Title, isLastLblHTML);
 					v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
@@ -11061,12 +11365,14 @@ LucidImporter = {};
 					var item = new Array();
 					var divider = new Array();
 					var currH = th / h;
+					var curY = th;
 					
 					for (var i = 0; i <= p.Attributes; i++)
 					{
 						if (i > 0)
 						{
-							divider[i] = new mxCell('', new mxGeometry(0, 0, 40, 8), 'line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;');
+							divider[i] = new mxCell('', new mxGeometry(0, curY, 40, 8), 'line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;');
+							curY += 8;
 							divider[i].vertex = true;
 							v.insert(divider[i]);
 						}
@@ -11094,7 +11400,9 @@ LucidImporter = {};
 						
 						var extH = p.ExtraHeightSet && i == 1? (p.ExtraHeight * scale) : 0;
 						
-						item[i] = new mxCell('', new mxGeometry(0, 0, w, Math.round((h - th) * itemH) + extH), 'part=1;html=1;resizeHeight=0;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;');
+						var curH = Math.round((h - th) * itemH) + extH;
+						item[i] = new mxCell('', new mxGeometry(0, curY, w, curH), 'part=1;html=1;resizeHeight=0;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;');
+						curY += curH;
 						item[i].vertex = true;
 						v.insert(item[i]);
 						item[i].style += st +
@@ -11127,7 +11435,7 @@ LucidImporter = {};
 				}
 				
 				v.value = convertText(p.Name);
-				v.style += 'swimlane;childLayout=stackLayout;horizontal=1;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;' + st +
+				v.style += 'swimlane;childLayout=stackLayout;horizontal=1;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;' + st +
 					'startSize=' + th + ';' +
 					getLabelStyle(p.Name, isLastLblHTML);
 				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
@@ -11143,12 +11451,14 @@ LucidImporter = {};
 				
 				var item = new Array();
 				var currH = th / h;
+				var curY = th;
 				
 				for (var i = 0; i < p.Fields; i++)
 				{
 					var itemH = 0;
-					
-					item[i] = new mxCell('', new mxGeometry(0, 0, w, p['Field' + (i + 1) + '_h'] * scale), 'part=1;resizeHeight=0;strokeColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;');
+					var curH = p['Field' + (i + 1) + '_h'] * scale;
+					item[i] = new mxCell('', new mxGeometry(0, curY, w, curH), 'part=1;resizeHeight=0;strokeColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;');
+					curY += curH;
 					item[i].vertex = true;
 					v.insert(item[i]);
 					item[i].style += st +
@@ -11656,6 +11966,241 @@ LucidImporter = {};
 				}
 				catch(e){}
 				break;
+			case 'BraceBlock':
+			case 'BraceBlockRotated':
+			case 'BracketBlock':
+			case 'BracketBlockRotated':
+				var bracketStyle = cls.indexOf('Bracket') == 0? 'size=0;arcSize=50;' : '';
+				var sideStyle = addAllStyles(v.style, p, a, v, isLastLblHTML);
+				var rotation = getRotation(p, a, v);
+				v.style = 'group;' + rotation;
+				var sideWidth = Math.min((rotation? w : h) * 0.14, 100);
+				var left = new mxCell('', new mxGeometry(0, 0, sideWidth, h), 'shape=curlyBracket;rounded=1;' + bracketStyle + sideStyle);
+				left.vertex = true;
+				left.geometry.relative = true;
+				var right = new mxCell('', new mxGeometry(1 - sideWidth / w, 0, sideWidth, h), 'shape=curlyBracket;rounded=1;flipH=1;' + bracketStyle + sideStyle);
+				right.vertex = true;
+				right.geometry.relative = true;
+				
+				v.insert(left);
+				v.insert(right);
+				break;
+			case 'BPMNTextAnnotation':
+			case 'NoteBlock':
+				p.InsetMargin = null;
+				v.value = convertText(p.Text);
+				v.style = 'group;spacingLeft=8;align=left;spacing=0;strokeColor=none;';
+				v.style += addAllStyles(v.style, p, a, v, isLastLblHTML);
+				
+				if (v.style.indexOf('verticalAlign') < 0)
+				{
+					v.style += 'verticalAlign=middle;';
+				}
+				
+				var side = new mxCell('', new mxGeometry(0, 0, 8, h), 'shape=partialRectangle;right=0;fillColor=none;');
+				side.geometry.relative = true;
+				side.vertex = true;
+				side.style += addAllStyles(side.style, p, a, v, isLastLblHTML);
+				
+				v.insert(side);
+				break;
+			case 'TimelineBlock':
+			//TODO Timeline shapes are postponed, this code is a work-in-progress
+				try
+				{
+					var daysMap = {
+						'Sunday': 0,
+						'Monday': 1,
+						'Tuesday': 2,
+						'Wednesday': 3,
+						'Thursday': 4,
+						'Friday': 5,
+						'Saturday': 6
+					};
+					var isLine = p.TimelineType == 'lineTimeline';
+					var startDate = new Date(p.StartDate);
+					var endDate = new Date(p.FinishDate);
+					var startOfWeek = daysMap[p.StartOfWeek];
+					var startOfFiscY = new Date(p.StartOfFiscalYear);
+					var timeUnit = p.TimeUnit;
+					var showStartEnd = p.DisplayStartFinishDates;
+					var showTickLbl = p.DisplayInterimDates;
+					var startTick, inc;
+					
+					switch (timeUnit)
+					{
+						case 'second':
+							startTick = inc = 1000;
+						break;
+						case 'minute':
+							startTick = inc = 1000 * 60;
+						break;
+						case 'hour':
+							startTick = inc = 1000 * 60 * 60;
+						break;
+						case 'day':
+							startTick = inc = 1000 * 60 * 60 * 24;
+						break;
+						case 'week':
+							var dayTillNextWeek = (7 - startDate.getDay() + startOfWeek) % 7;
+							var nextWeek = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + dayTillNextWeek);
+							startTick = nextWeek.getTime() - startDate.getTime();
+							inc = 1000 * 60 * 60 * 24 * 7;
+						break;
+						case 'month':
+							var nextMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1);
+							startTick = nextMonth.getTime() - startDate.getTime();
+							inc = 1000 * 60 * 60 * 24 * 30;
+						break;
+						case 'quarter':
+							var monthToNextQtr = (12 - startDate.getMonth() + startOfFiscY.getMonth()) % 3;
+							var nextQrt = new Date(startDate.getFullYear(), 
+								startDate.getMonth() + (monthToNextQtr == 0 && startDate.getDate() >= startOfFiscY.getDate()? 3 : monthToNextQtr), startOfFiscY.getDate());
+							startTick = nextQrt.getTime() - startDate.getTime();
+							inc = 1000 * 60 * 60 * 24 * 90;
+						break;
+						case 'year':
+							var nextYear = new Date(startDate.getFullYear() + 1, 0, 1);
+							startTick = nextYear.getTime() - startDate.getTime();
+							inc = 1000 * 60 * 60 * 24 * 365;
+						break;
+					}
+					
+					var diff = endDate.getTime() - startDate.getTime();
+					var afterFirst = diff - startTick;
+					var ticksCount = Math.round(afterFirst / inc);
+					
+					var startX = startTick/diff * w;
+					var ldx = inc/diff * w;
+					console.log(startX, ldx, ticksCount)
+				}
+				catch(e)
+				{
+					console.log(e); //Ignore
+				}
+				break;
+			case 'TimelineMilestoneBlock':
+				break;
+			case 'TimelineIntervalBlock':
+				break;
+			case 'FreehandBlock':
+				try
+				{
+					var rotation = getRotation(p, a, v);
+					v.style = 'group;' + rotation;
+
+					if (p.Stencil != null)
+					{
+						if (p.Stencil.id == null)
+						{
+							//Add a temporary stencil for embedded ones
+							p.Stencil.id = '$$tmpId$$';
+							addStencil(p.Stencil.id, p.Stencil);
+						}
+						
+						var stencil = LucidImporter.stencilsMap[p.Stencil.id];
+						
+						for (var i = 0; i < stencil.stencils.length; i++)
+						{
+							var shape = stencil.stencils[i];
+							var cell = new mxCell('', new mxGeometry(0, 0, w, h), 'shape=' + shape.shapeStencil + ';');
+							
+							if (shape.FillColor == 'prop')
+							{
+								shape.FillColor = p.FillColor;
+							}
+							
+							if (shape.FillColor == null)
+							{
+								shape.FillColor = '#ffffff00'; //Transparent fillColor
+							}
+							
+							if (shape.LineColor == 'prop')
+							{
+								shape.LineColor = p.LineColor;
+							}
+							
+							if (shape.LineColor == null)
+							{
+								shape.LineColor = '#ffffff00'; //Transparent strokeColor
+							}
+							
+							if (shape.LineWidth == 'prop')
+							{
+								shape.LineWidth = p.LineWidth;
+							}
+							//Add stencil styles
+							cell.style += addAllStyles(cell.style, shape, a, cell, isLastLblHTML);
+							//Add other styles from parent
+							cell.style += addAllStyles(cell.style, p, a, cell, isLastLblHTML);
+							cell.vertex = true;
+							cell.geometry.relative = true;
+							v.insert(cell);
+						}
+						
+						var index = 0;
+						var rotation = p.Rotation;
+						
+						while (p['t' + index])
+						{
+							var lblObj = p['t' + index];
+							var txt = convertText(lblObj);
+							
+							if (txt)
+							{
+								var lbl = new mxCell(txt, new mxGeometry(0, 0, w, h), 'strokeColor=none;fillColor=none;overflow=visible;');
+								p.Rotation = 0; //Disable rotation of the parent since it is captured in the srencil below
+								lbl.style += addAllStyles(lbl.style, p, a, lbl, isLastLblHTML);
+								p.Rotation = rotation;
+								
+								if (stencil.text != null && stencil.text['t' + index] != null)
+								{
+									var gTxtObj = stencil.text['t' + index];
+									gTxtObj.Rotation = rotation + gTxtObj.rotation;
+									lbl.style += addAllStyles(lbl.style, gTxtObj, a, lbl, isLastLblHTML);
+									var lblGeo = lbl.geometry;
+									
+									if (gTxtObj.w)
+									{
+										lblGeo.width *= gTxtObj.w;
+									}									
+									if (gTxtObj.h)
+									{
+										lblGeo.height *= gTxtObj.h;
+									}
+									if (gTxtObj.x)
+									{
+										lblGeo.x = gTxtObj.x / stencil.w;
+									}
+									if (gTxtObj.y)
+									{
+										lblGeo.y = gTxtObj.y / stencil.h;
+									}
+								}
+								
+								lbl.vertex = true;
+								lbl.geometry.relative = true;
+								v.insert(lbl);
+							}
+							
+							index++;						
+						}
+					}
+					
+					if (p.FillColor && p.FillColor.url)
+					{
+						var img = new mxCell('', new mxGeometry(0, 0, w, h), 'shape=image;html=1;');
+						img.style += getImage({}, {}, p.FillColor.url);
+						img.vertex = true;
+						img.geometry.relative = true;
+						v.insert(img);
+					}
+				}
+				catch(e)
+				{
+					console.log('Freehand error', e);
+				}
+				break;
 		}
 
 		if (v.style && v.style.indexOf('html') < 0)
@@ -11663,7 +12208,69 @@ LucidImporter = {};
 			v.style += 'html=1;';
 		}
 		
+		if (p.Title && p.Text)
+		{
+			try
+			{
+				var geo = v.geometry;
+				var title = new mxCell(convertText(p.Title), new mxGeometry(0, geo.height,geo.width, 10), 'strokeColor=none;fillColor=none;');
+				title.vertex = true;
+				v.insert(title);
+				v.style += getLabelStyle(p.Title, isLastLblHTML);
+			}
+			catch(e)
+			{
+				console.log(e);
+			}
+		}
+				
+		handleTextRotation(v, p);
+		
 	    return v;
+	};
+	
+	function handleTextRotation(v, p)
+	{
+		if (p.Text_TRotation)
+		{
+			try
+			{
+				var deg = mxUtils.toDegree(p.Text_TRotation);
+				
+				if (deg != 0 && v.value)
+				{
+					var w = v.geometry.width, h = v.geometry.height;
+					var lblW = w, lblH = h, x = 0, y = 0;
+					
+					if (deg == -90 || deg == -270)
+					{
+						lblW = h;
+						lblH = w;
+						var diff = Math.abs(h - w) / 2;
+						x = diff / w;
+						y = -diff/ h;
+					}
+					
+					deg += mxUtils.toDegree(p.Rotation);
+					
+					//Remove fill and stroke colors + rotation from vertex style
+					var style = v.style.split(';').filter(function(s)
+					{
+						return s.indexOf('fillColor=') < 0 && s.indexOf('strokeColor=') < 0 && s.indexOf('rotation=') < 0;
+					}).join(';');
+					
+					var lbl = new mxCell(v.value, new mxGeometry(x, y, lblW, lblH), style + 'fillColor=none;strokeColor=none;rotation=' + deg + ';');
+					v.value = null;
+					lbl.geometry.relative = true;
+					lbl.vertex = true;
+					v.insert(lbl);
+				}
+			}
+			catch(e)
+			{
+				console.log(e); //Ignore
+			}
+		}
 	};
 	
 	//TODO A lot of work is still needed to build the cell, do the layout, ...

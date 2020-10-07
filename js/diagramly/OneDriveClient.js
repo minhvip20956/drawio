@@ -32,6 +32,9 @@ OneDriveClient.prototype.clientId = window.DRAWIO_MSGRAPH_CLIENT_ID || ((window.
 
 OneDriveClient.prototype.clientId = window.location.hostname == 'app.diagrams.net' ?
 		'b5ff67d6-3155-4fca-965a-59a3655c4476' : OneDriveClient.prototype.clientId;
+
+OneDriveClient.prototype.clientId = window.location.hostname == 'viewer.diagrams.net' ?
+		'417a451a-a343-4788-b6c1-901e63182565' : OneDriveClient.prototype.clientId;
 /**
  * OAuth 2.0 scopes for installing Drive Apps.
  */
@@ -152,7 +155,15 @@ OneDriveClient.prototype.updateUser = function(success, error, failOnAuth)
 				success();
 			}
 		}
-	}), error);
+	}), mxUtils.bind(this, function(err)
+	{
+		window.clearTimeout(timeoutThread);
+			    	
+		if (acceptResponse)
+		{
+			error(err);
+		}
+	}));
 };
 
 OneDriveClient.prototype.resetTokenRefresh = function(expires_in)
@@ -182,6 +193,23 @@ OneDriveClient.prototype.resetTokenRefresh = function(expires_in)
  */
 OneDriveClient.prototype.authenticate = function(success, error, failOnAuth)
 {
+	var req = new mxXmlRequest(this.redirectUri + '?getState=1', null, 'GET');
+	
+	req.send(mxUtils.bind(this, function(req)
+	{
+		if (req.getStatus() >= 200 && req.getStatus() <= 299)
+		{
+			this.authenticateStep2(req.getText(), success, error, failOnAuth);
+		}
+		else if (error != null)
+		{
+			error(req);
+		}
+	}), error);
+};
+
+OneDriveClient.prototype.authenticateStep2 = function(state, success, error, failOnAuth)
+{
 	if (window.onOneDriveCallback == null)
 	{
 		var auth = mxUtils.bind(this, function()
@@ -194,7 +222,7 @@ OneDriveClient.prototype.authenticate = function(success, error, failOnAuth)
 			if (authInfo != null)
 			{
 				var req = new mxXmlRequest(this.redirectUri + '?refresh_token=' + authInfo.refresh_token +
-						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname), null, 'GET'); //To identify which app/domain is used
+						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname + '&ver=2&token=' + state), null, 'GET'); //To identify which app/domain is used
 				
 				req.send(mxUtils.bind(this, function(req)
 				{
@@ -237,7 +265,7 @@ OneDriveClient.prototype.authenticate = function(success, error, failOnAuth)
 						'?client_id=' + this.clientId + '&response_type=code' +
 						'&redirect_uri=' + encodeURIComponent(this.redirectUri) +
 						'&scope=' + encodeURIComponent(this.scopes) +
-						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname); //To identify which app/domain is used
+						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname + '&ver=2&token=' + state); //To identify which app/domain is used
 	
 					var width = 525,
 						height = 525,
@@ -422,7 +450,15 @@ OneDriveClient.prototype.executeRequest = function(url, success, error)
 					error(this.parseRequestText(req));
 				}
 			}
-		}), error);
+		}), mxUtils.bind(this, function(err)
+		{
+			window.clearTimeout(timeoutThread);
+				    	
+			if (acceptResponse)
+			{
+				error(err);
+			}
+		}));
 	});
 	
 	if (this.token == null || this.tokenExpiresOn - Date.now() < 60000) //60 sec tolerance window
@@ -492,6 +528,21 @@ OneDriveClient.prototype.getLibrary = function(id, success, error)
 };
 
 /**
+ * Workaround for added content to HTML files in Sharepoint.
+ */
+OneDriveClient.prototype.removeExtraHtmlContent = function(data)
+{
+	var idx = data.lastIndexOf('<html><head><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8"><meta name="Robots" ');
+
+	if (idx > 0)
+	{
+		data = data.substring(0, idx);
+	}
+	
+	return data;
+};
+
+/**
  * Checks if the client is authorized and calls the next step.
  */
 OneDriveClient.prototype.getFile = function(id, success, error, denyConvert, asLibrary)
@@ -531,6 +582,11 @@ OneDriveClient.prototype.getFile = function(id, success, error, denyConvert, asL
 			    	
 				    	if (acceptResponse)
 				    	{
+				    		if (/\.html$/i.test(meta.name))
+				    		{
+				    			data = this.removeExtraHtmlContent(data);
+				    		}
+				    		
 							var index = (binary) ? data.lastIndexOf(',') : -1;
 							var file = null;
 	
@@ -727,9 +783,7 @@ OneDriveClient.prototype.insertFile = function(filename, data, success, error, a
 				folder = this.getItemURL(folderId, true);
 			}
 			
-			var url = this.baseUrl + folder + '/children/' + encodeURIComponent(filename) + '/content';
-			
-			this.writeFile(url, data, 'PUT', null, mxUtils.bind(this, function(meta)
+			var insertSuccess = mxUtils.bind(this, function(meta)
 			{
 				if (asLibrary)
 				{
@@ -739,7 +793,23 @@ OneDriveClient.prototype.insertFile = function(filename, data, success, error, a
 				{
 					success(new OneDriveFile(this.ui, data, meta));
 				}
-			}), error);
+			});
+
+			var url = this.baseUrl + folder + '/children/' + encodeURIComponent(filename) + '/content';
+			
+			//OneDrive has a limit on PUT API of 4MB, larger files needs to use the upload session method
+			if (data.length >= 4000000 /*4MB*/)
+			{
+				//Create empty file first then upload. TODO Can we get an upload session for non-existing files?
+				this.writeFile(url, '', 'PUT', null, mxUtils.bind(this, function(meta)
+				{
+					this.writeLargeFile(this.getItemURL(meta.id), data, insertSuccess, error);
+				}), error);
+			}
+			else
+			{
+				this.writeFile(url, data, 'PUT', null, insertSuccess, error);
+			}
 		}
 		else
 		{
@@ -813,62 +883,22 @@ OneDriveClient.prototype.saveFile = function(file, success, error, etag)
 		
 		var fn = mxUtils.bind(this, function(data)
 		{
-			var url = this.getItemURL(file.getId());
-	
-			this.writeFile(url + '/content/', data, 'PUT', null, mxUtils.bind(this, function(resp)
+			var saveSuccess = mxUtils.bind(this, function(resp)
 			{
-				// Checks for truncated files in OneDrive by comparing expected and actual file size
-				// Apparently in some cases the file is not truncated but the expected and actual
-				// file size do still defer and cases with truncated files have not been detected
-				// ie. there were no cases where the file size was significantly off.
-	//			try
-	//			{
-	//				if (typeof window.Blob !== 'undefined')
-	//				{
-	//
-	//					// Returns string length in bytes instead of chars to check returned file size
-	//					function byteCount(str)
-	//					{
-	//						try
-	//						{
-	//							return new Blob([str]).size
-	//						}
-	//						catch (e)
-	//						{
-	//							// ignore
-	//						}
-	//						
-	//						return null;
-	//					};
-	//					
-	//					var exp = (typeof data === 'string') ? byteCount(data) : data.size;
-	//					
-	//					if (resp != null && exp != null && resp.size != exp)
-	//					{
-	//						// Logs failed save
-	//						var user = this.getUser();
-	//						
-	//						EditorUi.sendReport('Critical: Truncated OneDrive File ' +
-	//							new Date().toISOString() + ':' + '\n\nBrowser=' + navigator.userAgent +
-	//							'\nFile=' + file.getId() + '\nMime=' + file.meta.file.mimeType +
-	//							'\nUser=' + ((user != null) ? user.id : 'unknown') +
-	//							 	'-client_' + ((file.sync != null) ? file.sync.clientId : 'nosync') +
-	//							'\nExpected=' + exp + ' Actual=' + resp.size)
-	//						EditorUi.logError('Critical: Truncated OneDrive File ' + file.getId(),
-	//							null, 'expected_' + exp + '-actual_' + resp.size +
-	//							'-mime_' + file.meta.file.mimeType,
-	//							'user-' + ((user != null) ? user.id : 'unknown') +
-	//						 	((file.sync != null) ? '-client_' + file.sync.clientId : '-nosync'));
-	//					}
-	//				}
-	//			}
-	//			catch (e)
-	//			{
-	//				// ignore
-	//			}
-				
 				success(resp, savedData);
-			}), error, etag);
+			});
+
+			var url = this.getItemURL(file.getId());
+			
+			//OneDrive has a limit on PUT API of 4MB, larger files needs to use the upload session method
+			if (data.length >= 4000000 /*4MB*/)
+			{
+				this.writeLargeFile(url, data, saveSuccess, error, etag);
+			}
+			else
+			{
+				this.writeFile(url + '/content/', data, 'PUT', null, saveSuccess, error, etag);
+			}
 		});
 		
 		if (this.ui.useCanvasForExport && /(\.png)$/i.test(file.meta.name))
@@ -892,26 +922,82 @@ OneDriveClient.prototype.saveFile = function(file, success, error, etag)
 	}
 };
 
-/**
- * Translates this point by the given vector.
- * 
- * @param {number} dx X-coordinate of the translation.
- * @param {number} dy Y-coordinate of the translation.
- */
-OneDriveClient.prototype.writeFile = function(url, data, method, contentType, success, error, etag)
+OneDriveClient.prototype.writeLargeFile = function(url, data, success, error, etag)
 {
 	try
 	{
-		if (url != null && data != null)
+		var chunkSize = 4 * 1024 * 1024; //4MB chunk;
+		
+		if (data != null)
 		{
-			//OneDrive has a limit on PUT API of 4MB, larger files needs to use the upload session method
-			if (data.length >= 4000000 /*4MB*/)
+			var uploadPart = mxUtils.bind(this, function(uploadUrl, index, retryCount)
 			{
-				error({message: mxResources.get('drawingTooLarge') + ' (' +
-					this.ui.formatFileSize(data.length) + ' / 4 MB)'});
-				
-				return;
-			}
+				try
+				{
+					retryCount = retryCount || 0;
+					var acceptResponse = true;
+					var timeoutThread = null;
+						
+					timeoutThread = window.setTimeout(mxUtils.bind(this, function()
+					{
+						acceptResponse = false;
+						error({code: App.ERROR_TIMEOUT});
+					}), this.ui.timeout);
+	
+					var part = data.substr(index, chunkSize);
+					var req = new mxXmlRequest(uploadUrl, part, 'PUT');
+						
+					req.setRequestHeaders = mxUtils.bind(this, function(request, params)
+					{
+						request.setRequestHeader('Content-Length', part.length);
+						request.setRequestHeader('Content-Range', 'bytes ' + index + '-' + (index + part.length - 1) + '/' + data.length);
+					});
+
+					req.send(mxUtils.bind(this, function(req)
+					{
+				    	window.clearTimeout(timeoutThread);
+				    	
+				    	if (acceptResponse)
+				    	{
+							var status = req.getStatus();
+					    	if (status >= 200 && status <= 299)
+							{
+								var nextByte = index + part.length;
+								
+								if (nextByte == data.length)
+								{
+									success(JSON.parse(req.getText()));
+								}
+								else
+								{
+									uploadPart(uploadUrl, nextByte, retryCount);
+								}
+							}
+							else if (status >= 500 && status <= 599 && retryCount < 2) //Retry on server errors
+							{
+								retryCount++;
+								uploadPart(uploadUrl, index, retryCount);
+							}
+							else
+							{
+								error(this.parseRequestText(req), req);
+							}
+				    	}
+					}), mxUtils.bind(this, function(req)
+					{
+				    	window.clearTimeout(timeoutThread);
+				    	
+				    	if (acceptResponse)
+				    	{
+							error(this.parseRequestText(req));
+				    	}
+					}));
+				}
+				catch (e)
+				{
+					error(e);
+				}
+			});
 			
 			var doExecute = mxUtils.bind(this, function(failOnAuth)
 			{
@@ -925,7 +1011,114 @@ OneDriveClient.prototype.writeFile = function(url, data, method, contentType, su
 						timeoutThread = window.setTimeout(mxUtils.bind(this, function()
 						{
 							acceptResponse = false;
-							error({code: App.ERROR_TIMEOUT, retry: doExecute});
+							error({code: App.ERROR_TIMEOUT});
+						}), this.ui.timeout);
+					}
+					catch (e)
+					{
+						// Ignore window closed
+					}
+					
+					var req = new mxXmlRequest(url + '/createUploadSession', '{}', 'POST');
+					
+					req.setRequestHeaders = mxUtils.bind(this, function(request, params)
+					{
+						request.setRequestHeader('Content-Type', 'application/json');
+						request.setRequestHeader('Authorization', 'Bearer ' + this.token);
+						
+						if (etag != null)
+						{
+							request.setRequestHeader('If-Match', etag);
+						}
+					});
+					
+					req.send(mxUtils.bind(this, function(req)
+					{
+				    	window.clearTimeout(timeoutThread);
+				    	
+				    	if (acceptResponse)
+				    	{
+					    	if (req.getStatus() >= 200 && req.getStatus() <= 299)
+							{
+								var resp = JSON.parse(req.getText());
+					    		uploadPart(resp.uploadUrl, 0);
+							}
+							else if (!failOnAuth && req.getStatus() === 401)
+							{
+								this.authenticate(function()
+								{
+									doExecute(true);
+								}, error, failOnAuth);
+							}
+							else
+							{
+								error(this.parseRequestText(req), req);
+							}
+				    	}
+					}), mxUtils.bind(this, function(req)
+					{
+				    	window.clearTimeout(timeoutThread);
+				    	
+				    	if (acceptResponse)
+				    	{
+							error(this.parseRequestText(req));
+				    	}
+					}));
+				}
+				catch (e)
+				{
+					error(e);
+				}
+			});
+			
+			if (this.token == null || this.tokenExpiresOn - Date.now() < 60000) //60 sec tolerance window
+			{
+				this.authenticate(function()
+				{
+					doExecute(true);
+				}, error);
+			}
+			else
+			{
+				doExecute(false);
+			}
+		}
+		else
+		{
+			error({message: mxResources.get('unknownError')});
+		}
+	}
+	catch (e)
+	{
+		error(e);
+	}
+};
+
+/**
+ * Translates this point by the given vector.
+ * 
+ * @param {number} dx X-coordinate of the translation.
+ * @param {number} dy Y-coordinate of the translation.
+ */
+OneDriveClient.prototype.writeFile = function(url, data, method, contentType, success, error, etag)
+{
+	try
+	{
+		if (url != null && data != null)
+		{
+			var doExecute = mxUtils.bind(this, function(failOnAuth)
+			{
+				try
+				{
+					var acceptResponse = true;
+					var timeoutThread = null;
+					
+					try
+					{
+						timeoutThread = window.setTimeout(mxUtils.bind(this, function()
+						{
+							acceptResponse = false;
+							error({code: App.ERROR_TIMEOUT});
 						}), this.ui.timeout);
 					}
 					catch (e)

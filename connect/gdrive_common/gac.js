@@ -2,8 +2,9 @@
 //		(note also that google doesn't return the refresh token with every request + in office add-in we save the local storage differently)
 var GAC = {};
 
+GAC.host = window.location.host;
 GAC.clientId = '850530949725.apps.googleusercontent.com';
-GAC.redirectUri = 'https://' + window.location.hostname + '/google';
+GAC.redirectUri = window.location.protocol + '//' + GAC.host + '/google';
 GAC.scopes = ['https://www.googleapis.com/auth/drive.readonly',
 	'https://www.googleapis.com/auth/userinfo.profile']; 
 GAC.isLocalStorage = typeof(Storage) != 'undefined';
@@ -21,7 +22,7 @@ else
 	CAC.applyCAC(GAC);
 }
 
-GAC.authGDrive = function(success, error)
+GAC.authGDrive = function(success, error, direct)
 {
 	GAC.reqQueue.push({success: success, error: error});
 	
@@ -34,7 +35,7 @@ GAC.authGDrive = function(success, error)
 	
 	if (window.onGoogleDriveCallback == null)
 	{
-		var auth = function()
+		var authStep2 = function(state)
 		{
 			var acceptAuthResponse = true;
 			
@@ -42,7 +43,7 @@ GAC.authGDrive = function(success, error)
 				'&redirect_uri=' + encodeURIComponent(GAC.redirectUri) + 
 				'&response_type=code&access_type=offline&prompt=consent%20select_account&include_granted_scopes=true' +
 				'&scope=' + encodeURIComponent(GAC.scopes.join(' ')) +
-				'&state=' + encodeURIComponent('cId=' + GAC.clientId + '&domain=' + window.location.hostname); //To identify which app/domain is used
+				'&state=' + encodeURIComponent('cId=' + GAC.clientId + '&domain=' + GAC.host + '&ver=2&token=' + state); //To identify which app/domain is used
 
 			var width = 525,
 				height = 525,
@@ -124,34 +125,64 @@ GAC.authGDrive = function(success, error)
 			}
 		};
 		
-		if (window.spinner != null)
+		var auth = function()
 		{
-			spinner.stop();
-		}
-		
-		var authDialog = document.createElement('div');
-		var btn = document.createElement('button');
-		btn.innerHTML = 'Authorize draw.io to access Google Drive';
-		btn.className = 'aui-button aui-button-primary';
-		authDialog.appendChild(btn);
-		
-		function adjustAuthBtn()
-		{
-			var w = window.innerWidth, h = window.innerHeight;
-			authDialog.style.cssText = 'position: absolute; top: 0px; left: 0px; width: '+ w +'px; height: '+ h +'px; background: #fff;opacity: 0.85;z-index: 999;';
-			btn.style.cssText = 'position: absolute; width: 320px; height: 50px; top: '+ (h/2 - 25) +'px; left: '+ (w/2 - 160) +'px;opacity: 1;';
-		}
+			var req = new XMLHttpRequest();
+			req.open('GET', GAC.redirectUri + '?getState=1');
+			
+			req.onreadystatechange = function()
+			{
+				if (this.readyState == 4)
+				{
+					if (this.status >= 200 && this.status <= 299)
+					{
+						authStep2(req.responseText);
+					}
+					else
+					{
+						error(this);
+					}
+				}
+			};
+			
+			req.send();
+		};
 
-		btn.addEventListener('click', function(evt) 
+		if (direct)
 		{
 			auth();
-			//Remove the event handler since the user already used the button
-			window.removeEventListener("resize", adjustAuthBtn);
-		});
-		
-		window.addEventListener('resize', adjustAuthBtn);
-		adjustAuthBtn();
-		document.body.appendChild(authDialog);
+		}
+		else
+		{
+			if (window.spinner != null)
+			{
+				spinner.stop();
+			}
+			
+			var authDialog = document.createElement('div');
+			var btn = document.createElement('button');
+			btn.innerHTML = 'Authorize draw.io to access Google Drive';
+			btn.className = 'aui-button aui-button-primary';
+			authDialog.appendChild(btn);
+			
+			function adjustAuthBtn()
+			{
+				var w = window.innerWidth, h = window.innerHeight;
+				authDialog.style.cssText = 'position: absolute; top: 0px; left: 0px; width: '+ w +'px; height: '+ h +'px; background: #fff;opacity: 0.85;z-index: 9999;';
+				btn.style.cssText = 'position: absolute; width: 320px; height: 50px; top: '+ (h/2 - 25) +'px; left: '+ (w/2 - 160) +'px;opacity: 1;';
+			}
+	
+			btn.addEventListener('click', function(evt) 
+			{
+				auth();
+				//Remove the event handler since the user already used the button
+				window.removeEventListener("resize", adjustAuthBtn);
+			});
+			
+			window.addEventListener('resize', adjustAuthBtn);
+			adjustAuthBtn();
+			document.body.appendChild(authDialog);
+		}
 	}
 	else
 	{
@@ -169,7 +200,7 @@ GAC.doAuthRequest = function(url, method, params, success, error)
 };
 
 //JSON request with auth
-GAC.doAuthRequestPlain = function(url, method, params, success, error, contentType, isBinary, retryCount, isBlob)
+GAC.doAuthRequestPlain = function(url, method, params, success, error, contentType, isBinary, retryCount, isBlob, failIfNotAuth)
 {
 	retryCount = retryCount || 0;
 	
@@ -187,12 +218,18 @@ GAC.doAuthRequestPlain = function(url, method, params, success, error, contentTy
 		
 		if (token == null)
 		{
-			GAC.authGDrive(function()
+			if (failIfNotAuth)
 			{
-				//Retry request after authentication
-				GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
-			}, error);
-			
+				error({authNeeded: true});
+			}
+			else
+			{
+				GAC.authGDrive(function()
+				{
+					//Retry request after authentication
+					GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
+				}, error);
+			}
 			return;
 		}
 		else
@@ -221,9 +258,53 @@ GAC.doAuthRequestPlain = function(url, method, params, success, error, contentTy
 				
 				if (authInfo != null && authInfo.refreshToken != null)
 				{
+					function doRefreshToken(state)
+					{
+						var req2 = new XMLHttpRequest();
+						req2.open('GET', GAC.redirectUri + '?refresh_token=' + authInfo.refreshToken +
+								'&state=' + encodeURIComponent('cId=' + GAC.clientId + '&domain=' + GAC.host + '&ver=2&token=' + state)); //To identify which app/domain is used
+						
+						req2.onreadystatechange = function()
+						{
+							if (this.readyState == 4)
+							{
+								if (this.status >= 200 && this.status <= 299)
+								{
+									var newAuthInfo = JSON.parse(req2.responseText);
+									GAC.token = newAuthInfo.access_token;
+									//Update existing authInfo and save it
+									authInfo.access_token = newAuthInfo.access_token;
+									authInfo.refresh_token = newAuthInfo.refresh_token;
+									authInfo.expires = Date.now() + newAuthInfo.expires_in * 1000;
+									authInfo.token = authInfo.access_token;
+									authInfo.refreshToken = authInfo.refresh_token;
+									GAC.setPersistentAuth(authInfo);
+									//Retry request with refreshed token
+									GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
+								}
+								else // (Unauthorized) [e.g, invalid refresh token] (sometimes, the server returns errors other than 401 (e.g. 500))
+								{
+									if (failIfNotAuth)
+									{
+										error({authNeeded: true});
+									}
+									else
+									{
+										GAC.authGDrive(function()
+										{
+											//Retry request after authentication
+											GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
+										}, error);
+									}
+								}
+							}
+						}
+						
+						req2.send();
+					};
+					
 					var req2 = new XMLHttpRequest();
-					req2.open('GET', GAC.redirectUri + '?refresh_token=' + authInfo.refreshToken +
-							'&state=' + encodeURIComponent('cId=' + GAC.clientId + '&domain=' + window.location.hostname)); //To identify which app/domain is used
+					req2.open('GET', GAC.redirectUri + '?getState=1');
 					
 					req2.onreadystatechange = function()
 					{
@@ -231,38 +312,31 @@ GAC.doAuthRequestPlain = function(url, method, params, success, error, contentTy
 						{
 							if (this.status >= 200 && this.status <= 299)
 							{
-								var newAuthInfo = JSON.parse(req2.responseText);
-								GAC.token = newAuthInfo.access_token;
-								//Update existing authInfo and save it
-								authInfo.access_token = newAuthInfo.access_token;
-								authInfo.refresh_token = newAuthInfo.refresh_token;
-								authInfo.expires = Date.now() + newAuthInfo.expires_in * 1000;
-								authInfo.token = authInfo.access_token;
-								authInfo.refreshToken = authInfo.refresh_token;
-								GAC.setPersistentAuth(authInfo);
-								//Retry request with refreshed token
-								GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
+								doRefreshToken(req2.responseText);
 							}
-							else // (Unauthorized) [e.g, invalid refresh token] (sometimes, the server returns errors other than 401 (e.g. 500))
+							else
 							{
-								GAC.authGDrive(function()
-								{
-									//Retry request after authentication
-									GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
-								}, error);
+								error(this);
 							}
 						}
-					}
+					};
 					
 					req2.send();
 				}
 				else
 				{
-					GAC.authGDrive(function()
+					if (failIfNotAuth)
 					{
-						//Retry request after authentication
-						GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
-					}, error);
+						error({authNeeded: true});
+					}
+					else
+					{
+						GAC.authGDrive(function()
+						{
+							//Retry request after authentication
+							GAC.doAuthRequestPlain(url, method, params, success, error, contentType, isBinary, ++retryCount, isBlob);
+						}, error);
+					}
 				}
 			}
 			else
@@ -308,7 +382,7 @@ GAC.setOrigin = function(origin)
 
 GAC.getOrigin = function()
 {
-	return GAC.origin || GAC.getUrlParam('xdm_e', true) || ('https://' + window.location.host);
+	return GAC.origin || GAC.getUrlParam('xdm_e', true) || (window.location.protocol + '//' + window.location.host);
 };
 
 GAC.pickFile = function(fn, acceptFolders)
@@ -342,6 +416,7 @@ GAC.pickFile = function(fn, acceptFolders)
 		{
 			  if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED)
 		      {
+				  	picker.setVisible(false);
 				    var doc = data[google.picker.Response.DOCUMENTS][0];
 				    
 				    GAC.getFileInfo(doc.id, function(fullDoc)
@@ -360,10 +435,10 @@ GAC.pickFile = function(fn, acceptFolders)
 	picker.setVisible(true);
 };
 
-GAC.confirmGDAuth = function(success, error)
+GAC.confirmGDAuth = function(success, error, failIfNotAuth)
 {
 	GAC.doAuthRequestPlain('https://www.googleapis.com/oauth2/v2/userinfo',
-			 'GET', null, success, error);
+			 'GET', null, success, error, null, null, null, null, failIfNotAuth);
 };
 
 //This function depends on having GraphViewer loaded

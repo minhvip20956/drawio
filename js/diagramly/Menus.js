@@ -81,7 +81,7 @@
 		editorUi.actions.addAction('new...', function()
 		{
 			var compact = editorUi.isOffline();
-			var dlg = new NewDialog(editorUi, compact);
+			var dlg = new NewDialog(editorUi, compact, !(editorUi.mode == App.MODE_DEVICE && 'chooseFileSystemEntries' in window));
 
 			editorUi.showDialog(dlg.container, (compact) ? 350 : 620, (compact) ? 70 : 440, true, true, function(cancel)
 			{
@@ -94,23 +94,6 @@
 			dlg.init();
 		});
 
-		editorUi.actions.put('exportSvg', new Action(mxResources.get('formatSvg') + '...', function()
-		{
-			editorUi.showExportDialog(mxResources.get('formatSvg'), true, mxResources.get('export'),
-				'https://support.draw.io/display/DO/Exporting+Files',
-				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow,
-					editable, embedImages, border, cropImage, currentPage, linkTarget)
-				{
-					var val = parseInt(scale);
-					
-					if (!isNaN(val) && val > 0)
-					{
-					   	editorUi.exportSvg(val / 100, transparentBackground, ignoreSelection, addShadow,
-					   		editable, embedImages, border, !cropImage, currentPage, linkTarget);
-					}
-				}), true, null, 'svg');
-		}));
-		
 		editorUi.actions.put('insertTemplate', new Action(mxResources.get('template') + '...', function()
 		{
 			var dlg = new NewDialog(editorUi, null, false, function(xml)
@@ -297,7 +280,8 @@
 			{
 				// Export PDF action for chrome OS (same as print with different dialog title)
 				editorUi.showDialog(new PrintDialog(editorUi, mxResources.get('formatPdf')).container, 360,
-						(editorUi.pages != null && editorUi.pages.length > 1) ?
+						(editorUi.pages != null && editorUi.pages.length > 1 && (editorUi.editor.editable ||
+						urlParams['hide-pages'] != '1')) ?
 						450 : 370, true, true);
 			}
 			else
@@ -316,6 +300,7 @@
 					if (allPages != this && this.checked)
 					{
 						crop.removeAttribute('disabled');
+						crop.checked = !graph.pageVisible;
 					}
 					else
 					{
@@ -337,7 +322,7 @@
 					mxEvent.addListener(allPages, 'change', cropEnableFn);
 					mxEvent.addListener(currentPage, 'change', cropEnableFn);
 					mxEvent.addListener(selection, 'change', cropEnableFn);
-					dlgH = 240;
+					dlgH += 60;
 				}
 				else
 				{
@@ -355,20 +340,25 @@
 					}
 				}
 				
-				var includeOption = !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
+				var isDrawioWeb = !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
 					editorUi.getServiceName() == 'draw.io';
-				var include = (includeOption) ? editorUi.addCheckbox(div,
-					mxResources.get('includeCopyOfMyDiagram'), true) : null;
+
+				var transparentBkg = null, include = null;
 					
-				if (includeOption)
+				if (isDrawioWeb)
 				{
-					dlgH += 30;
+					include = editorUi.addCheckbox(div,
+							mxResources.get('includeCopyOfMyDiagram'), true);
+					transparentBkg = editorUi.addCheckbox(div,
+							mxResources.get('transparentBackground'), false);
+					
+					dlgH += 60;
 				}
 				
 				var dlg = new CustomDialog(editorUi, div, mxUtils.bind(this, function()
 				{
 					editorUi.downloadFile('pdf', null, null, !selection.checked,
-						noPages? true : !allPages.checked, !crop.checked, null, null,
+						noPages? true : !allPages.checked, !crop.checked, transparentBkg != null && transparentBkg.checked, null,
 						null, grid.checked, include != null && include.checked);
 				}), null, mxResources.get('export'));
 				editorUi.showDialog(dlg.container, 300, dlgH, true, true);
@@ -459,7 +449,7 @@
 		{
 			action.label = mxResources.get('refresh');
 		}
-
+		
 		editorUi.actions.addAction('upload...', function()
 		{
 			var file = editorUi.getCurrentFile();
@@ -493,7 +483,7 @@
 			action.isEnabled = isGraphEnabled;
 		}
 		
-		if (isLocalStorage || mxClient.IS_CHROMEAPP)
+		if (isLocalStorage)
 		{
 			var action = editorUi.actions.addAction('showStartScreen', function()
 			{
@@ -516,37 +506,6 @@
 			return autosaveAction.isEnabled() && editorUi.editor.autosave;
 		});
 		
-		var compressedAction = editorUi.actions.addAction('compressed', function()
-		{
-			var file = editorUi.getCurrentFile();
-			
-			if (file != null)
-			{
-				if (file.isCompressed())
-				{
-					file.decompress();
-				}
-				else
-				{
-					file.compress();
-				}
-			}
-		});
-		
-		compressedAction.setToggleAction(true);
-		
-		compressedAction.setSelectedCallback(function()
-		{
-			var file = editorUi.getCurrentFile();
-			
-			return file != null && file.isCompressed();
-		});
-
-		compressedAction.isEnabled = function()
-		{
-			return editorUi.getCurrentFile() != null;
-		}
-		
 		editorUi.actions.addAction('editGeometry...', function()
 		{
 			var cells = graph.getSelectionCells();
@@ -563,79 +522,26 @@
 			if (vertices.length > 0)
 			{
 				var dlg = new EditGeometryDialog(editorUi, vertices);
-				editorUi.showDialog(dlg.container, 200, 250, true, true);
+				editorUi.showDialog(dlg.container, 200, 270, true, true);
 				dlg.init();
 			}
 		}, null, null, Editor.ctrlKey + '+Shift+M');
 
-		var copiedStyles = ['rounded', 'shadow', 'dashed', 'dashPattern', 'fontFamily', 'fontSize', 'fontColor', 'fontStyle',
-			 				'align', 'verticalAlign', 'strokeColor', 'strokeWidth', 'fillColor', 'gradientColor', 'swimlaneFillColor',
-		                    'textOpacity', 'gradientDirection', 'glass', 'labelBackgroundColor', 'labelBorderColor', 'opacity',
-		                    'spacing', 'spacingTop', 'spacingLeft', 'spacingBottom', 'spacingRight', 'endFill', 'endArrow',
-		                    'endSize', 'targetPerimeterSpacing', 'startFill', 'startArrow', 'startSize', 'sourcePerimeterSpacing',
-		                    'arcSize'];
+		var currentStyle = null;
 		
 		editorUi.actions.addAction('copyStyle', function()
 		{
-			var state = graph.view.getState(graph.getSelectionCell());
-			
-			if (graph.isEnabled() && state != null)
+			if (graph.isEnabled() && !graph.isSelectionEmpty())
 			{
-				editorUi.copiedStyle = mxUtils.clone(state.style);
-				
-				// Handles special case for value "none"
-				var cellStyle = graph.getModel().getStyle(state.cell);
-				var tokens = (cellStyle != null) ? cellStyle.split(';') : [];
-				
-				for (var j = 0; j < tokens.length; j++)
-				{
-					var tmp = tokens[j];
-			 		var pos = tmp.indexOf('=');
-			 					 		
-			 		if (pos >= 0)
-			 		{
-			 			var key = tmp.substring(0, pos);
-			 			var value = tmp.substring(pos + 1);
-			 			
-			 			if (editorUi.copiedStyle[key] == null && value == 'none')
-			 			{
-			 				editorUi.copiedStyle[key] = 'none';
-			 			}
-			 		}
-				}
+				currentStyle = graph.copyStyle(graph.getSelectionCell())
 			}
 		}, null, null, Editor.ctrlKey + '+Shift+C');
 
 		editorUi.actions.addAction('pasteStyle', function()
 		{
-			if (graph.isEnabled() && !graph.isSelectionEmpty() && editorUi.copiedStyle != null)
+			if (graph.isEnabled() && !graph.isSelectionEmpty() && currentStyle != null)
 			{
-				graph.getModel().beginUpdate();
-				
-				try
-				{
-					var cells = graph.getSelectionCells();
-					
-					for (var i = 0; i < cells.length; i++)
-					{
-						var state = graph.view.getState(cells[i]);
-						
-						for (var j = 0; j < copiedStyles.length; j++)
-						{
-							var key = copiedStyles[j];
-							var value = editorUi.copiedStyle[key];
-							
-							if (state.style[key] != value)
-							{
-								graph.setCellStyles(key, value, [cells[i]]);
-							}
-						}
-					}
-				}
-				finally
-				{
-					graph.getModel().endUpdate();
-				}
+				graph.pasteStyle(currentStyle, graph.getSelectionCells())
 			}
 		}, null, null, Editor.ctrlKey + '+Shift+V');
 		
@@ -654,21 +560,38 @@
 			}
 		}));
 		
+		editorUi.actions.put('exportSvg', new Action(mxResources.get('formatSvg') + '...', function()
+		{
+			editorUi.showExportDialog(mxResources.get('formatSvg'), true, mxResources.get('export'),
+				'https://desk.draw.io/support/solutions/articles/16000067785',
+				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow,
+					editable, embedImages, border, cropImage, currentPage, linkTarget, grid, keepTheme)
+				{
+					var val = parseInt(scale);
+					
+					if (!isNaN(val) && val > 0)
+					{
+					   	editorUi.exportSvg(val / 100, transparentBackground, ignoreSelection, addShadow,
+					   		editable, embedImages, border, !cropImage, currentPage, linkTarget, keepTheme);
+					}
+				}), true, null, 'svg');
+		}));
+		
 		editorUi.actions.put('exportPng', new Action(mxResources.get('formatPng') + '...', function()
 		{
 			if (editorUi.isExportToCanvas())
 			{
 				editorUi.showExportDialog(mxResources.get('image'), false, mxResources.get('export'),
-					'https://support.draw.io/display/DO/Exporting+Files',
-					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection,
-						addShadow, editable, embedImages, border, cropImage, currentPage, dummy, grid)
+					'https://desk.draw.io/support/solutions/articles/16000067785',
+					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow,
+						editable, embedImages, border, cropImage, currentPage, dummy, grid, keepTheme)
 					{
 						var val = parseInt(scale);
 						
 						if (!isNaN(val) && val > 0)
 						{
-						   	editorUi.exportImage(val / 100, transparentBackground, ignoreSelection,
-						   		addShadow, editable, border, !cropImage, currentPage, null, grid);
+						   	editorUi.exportImage(val / 100, transparentBackground, ignoreSelection, addShadow,
+						   		editable, border, !cropImage, currentPage, null, grid, null, keepTheme);
 						}
 					}), true, true, 'png');
 			}
@@ -686,16 +609,16 @@
 			if (editorUi.isExportToCanvas())
 			{
 				editorUi.showExportDialog(mxResources.get('image'), false, mxResources.get('export'),
-					'https://support.draw.io/display/DO/Exporting+Files',
-					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection,
-						addShadow, editable, embedImages, border, cropImage, currentPage, dummy, grid)
+					'https://desk.draw.io/support/solutions/articles/16000067785',
+					mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow,
+						editable, embedImages, border, cropImage, currentPage, dummy, grid, keepTheme)
 					{
 						var val = parseInt(scale);
 						
 						if (!isNaN(val) && val > 0)
 						{
-							editorUi.exportImage(val / 100, false, ignoreSelection,
-							   	addShadow, false, border, !cropImage, false, 'jpeg', grid);
+							editorUi.exportImage(val / 100, false, ignoreSelection, addShadow,
+								false, border, !cropImage, false, 'jpeg', grid, null, keepTheme);
 						}
 					}), true, false, 'jpeg');
 			}
@@ -729,11 +652,6 @@
 			}
 		}));
 		
-		editorUi.actions.addAction('userManual...', function()
-		{
-			editorUi.openLink('https://support.draw.io/display/DO/Draw.io+Online+User+Manual');
-		});
-
 		editorUi.actions.addAction('support...', function()
 		{
 			editorUi.openLink('https://github.com/jgraph/drawio/wiki/Getting-Support');
@@ -747,17 +665,13 @@
 
 		editorUi.actions.addAction('keyboardShortcuts...', function()
 		{
-			if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
-			{
-				editorUi.openLink('https://www.draw.io/shortcuts.svg');
-			}
-			else if (mxClient.IS_SVG)
+			if (mxClient.IS_SVG && !mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp)
 			{
 				editorUi.openLink('shortcuts.svg');
 			}
 			else
 			{
-				editorUi.openLink('https://www.draw.io/?lightbox=1#Uhttps%3A%2F%2Fwww.draw.io%2Fshortcuts.svg');
+				editorUi.openLink('https://viewer.diagrams.net/#Uhttps%3A%2F%2Fviewer.diagrams.net%2Fshortcuts.svg');
 			}
 		});
 
@@ -771,6 +685,16 @@
 		editorUi.actions.addAction('quickStart...', function()
 		{
 			editorUi.openLink('https://www.youtube.com/watch?v=Z0D96ZikMkc');
+		});
+		
+		editorUi.actions.addAction('forkme', function()
+		{
+			editorUi.openLink('https://github.com/jgraph/drawio');
+		}).label = 'Fork me on GitHub...';
+		
+		editorUi.actions.addAction('downloadDesktop...', function()
+		{
+			editorUi.openLink('https://get.diagrams.net/');
 		});
 		
 		action = editorUi.actions.addAction('tags...', mxUtils.bind(this, function()
@@ -1093,7 +1017,15 @@
 					{
 						var graph = editorUi.editor.graph;
 						var orgChartLayout = new mxOrgChartLayout(graph, branchOptimizer, parentChildSpacingVal, siblingSpacingVal);
-						orgChartLayout.execute(graph.getDefaultParent());
+						
+						var cell = graph.getDefaultParent();
+						
+						if (graph.model.getChildCount(graph.getSelectionCell()) > 1)
+						{
+							cell = graph.getSelectionCell();
+						}
+						
+						orgChartLayout.execute(cell);
 						notExecuted = false;
 					}
 				};
@@ -1291,7 +1223,7 @@
 				}, 0);
 				
 				this.addMenuItems(menu, ['-', 'keyboardShortcuts', 'quickStart',
-					'-', 'userManual', 'support', '-', 'about'], parent);
+					'support', '-', 'forkme', 'downloadDesktop', '-', 'about'], parent);
 			}
 			
 			if (urlParams['test'] == '1')
@@ -1319,9 +1251,13 @@
 			{
 				if (!graph.isSelectionEmpty())
 				{
-					editorUi.showTextDialog('Create Sidebar Entry', 'sb.createVertexTemplateFromData(\'' +
-						Graph.compress(mxUtils.getXml(graph.encodeCells(graph.getSelectionCells()))) +
-						'\', width, height, \'Title\');');
+					var cells = graph.cloneCells(graph.getSelectionCells());
+					var bbox = graph.getBoundingBoxFromGeometry(cells);
+					cells = graph.moveCells(cells, -bbox.x, -bbox.y);
+					
+					editorUi.showTextDialog('Create Sidebar Entry', 'this.addDataEntry(\'tag1 tag2\', ' +
+						bbox.width + ', ' + bbox.height + ', \'The Title\', \'' +
+						Graph.compress(mxUtils.getXml(graph.encodeCells(cells))) + '\'),');
 				}
 			}));
 	
@@ -1885,7 +1821,7 @@
 			var bounds = graph.getGraphBounds();
 			
 			editorUi.showPublishLinkDialog(mxResources.get('iframe'), null, '100%',
-				(Math.ceil((bounds.y + bounds.height - graph.view.translate.y) / graph.view.scale) + 2),
+				Math.ceil(bounds.height / graph.view.scale) + 2,
 				function(linkTarget, linkColor, allPages, lightbox, editLink, layers, width, height)
 			{
 				if (editorUi.spinner.spin(document.body, mxResources.get('loading')))
@@ -2026,16 +1962,18 @@
 				//Add support to saving files if embedded mode is running with files
 				var file = editorUi.getCurrentFile();
 				
-				if (file != null)
+				if (file != null && file.constructor != EmbedFile && (file.constructor != LocalFile || file.mode != null))
 				{
 					editorUi.saveFile();
 				}
 			};
 	
-			editorUi.actions.addAction('saveAndExit', function()
+			var saveAndExitAction = editorUi.actions.addAction('saveAndExit', function()
 			{
 				editorUi.actions.get('save').funct(true);
 			});
+			
+			saveAndExitAction.label = urlParams['publishClose'] == '1' ? mxResources.get('publish') : mxResources.get('saveAndExit');
 			
 			editorUi.actions.addAction('exit', function()
 			{
@@ -2473,50 +2411,57 @@
 				{
 					var dlg = new CreateDialog(editorUi, title, mxUtils.bind(this, function(newTitle, mode)
 					{
-						// Mode is "download" if Create button is pressed, means use Google Drive
-						if (mode == 'download')
+						if (mode == '_blank')
 						{
-							mode = App.MODE_GOOGLE;
+							editorUi.editor.editAsNew(editorUi.getFileData(), newTitle);
 						}
-						
-						if (newTitle != null && newTitle.length > 0)
+						else
 						{
-							if (mode == App.MODE_GOOGLE)
+							// Mode is "download" if Create button is pressed, means use Google Drive
+							if (mode == 'download')
 							{
-								if (editorUi.spinner.spin(document.body, mxResources.get('saving')))
+								mode = App.MODE_GOOGLE;
+							}
+	
+							if (newTitle != null && newTitle.length > 0)
+							{
+								if (mode == App.MODE_GOOGLE)
 								{
-									// Saveas does not update the file descriptor in Google Drive
-									file.saveAs(newTitle, mxUtils.bind(this, function(resp)
+									if (editorUi.spinner.spin(document.body, mxResources.get('saving')))
 									{
-										// Replaces file descriptor in-place and saves
-										file.desc = resp;
-										
-										// Makes sure the latest XML is in the file
-										file.save(false, mxUtils.bind(this, function()
+										// Saveas does not update the file descriptor in Google Drive
+										file.saveAs(newTitle, mxUtils.bind(this, function(resp)
 										{
-											editorUi.spinner.stop();
-											file.setModified(false);
-											file.addAllSavedStatus();
+											// Replaces file descriptor in-place and saves
+											file.desc = resp;
+											
+											// Makes sure the latest XML is in the file
+											file.save(false, mxUtils.bind(this, function()
+											{
+												editorUi.spinner.stop();
+												file.setModified(false);
+												file.addAllSavedStatus();
+											}), mxUtils.bind(this, function(resp)
+											{
+												editorUi.handleError(resp);
+											}));
 										}), mxUtils.bind(this, function(resp)
 										{
 											editorUi.handleError(resp);
 										}));
-									}), mxUtils.bind(this, function(resp)
-									{
-										editorUi.handleError(resp);
-									}));
+									}
 								}
-							}
-							else
-							{
-								editorUi.createFile(newTitle, editorUi.getFileData(true), null, mode);
+								else
+								{
+									editorUi.createFile(newTitle, editorUi.getFileData(true), null, mode);
+								}
 							}
 						}
 					}), mxUtils.bind(this, function()
 					{
 						editorUi.hideDialog();
 					}), mxResources.get('makeCopy'), mxResources.get('create'), null,
-						null, null, null, true, null, null, null, null,
+						null, true, null, true, null, null, null, null,
 						editorUi.editor.fileExtensions);
 					editorUi.showDialog(dlg.container, 420, 380, true, true);
 					dlg.init();
@@ -2588,7 +2533,7 @@
 				
 				if (file != null)
 				{
-					editorUi.drive.showPermissions(file.getId());
+					file.share();
 				}
 			}
 			catch (e)
@@ -2647,9 +2592,12 @@
 		
 		var insertVertex = function(value, w, h, style)
 		{
-			var pt = (graph.isMouseInsertPoint()) ? graph.getInsertPoint() : graph.getFreeInsertPoint();
-			var cell = new mxCell(value, new mxGeometry(pt.x, pt.y, w, h), style);
+			var cell = new mxCell(value, new mxGeometry(0, 0, w, h), style);
 			cell.vertex = true;
+
+			var pt = graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry([cell], true));
+			cell.geometry.x = pt.x;
+    	    cell.geometry.y = pt.y;
 		
     		graph.getModel().beginUpdate();
     		try
@@ -2682,23 +2630,6 @@
     		
 	    	return cell;
 		};
-		
-		editorUi.actions.put('exportSvg', new Action(mxResources.get('formatSvg') + '...', function()
-		{
-			editorUi.showExportDialog(mxResources.get('formatSvg'), true, mxResources.get('export'),
-				'https://support.draw.io/display/DO/Exporting+Files',
-				mxUtils.bind(this, function(scale, transparentBackground, ignoreSelection, addShadow,
-					editable, embedImages, border, cropImage, currentPage, linkTarget)
-				{
-					var val = parseInt(scale);
-					
-					if (!isNaN(val) && val > 0)
-					{
-					   	editorUi.exportSvg(val / 100, transparentBackground, ignoreSelection, addShadow,
-					   		editable, embedImages, border, !cropImage, currentPage, linkTarget);
-					}
-				}), true, null, 'svg');
-		}));
 		
 		editorUi.actions.put('insertText', new Action(mxResources.get('text'), function()
 		{
@@ -3210,7 +3141,7 @@
 				}
 			}));
 		}
-			
+
 		// Overrides edit menu to add find and editGeometry
 		this.put('edit', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
@@ -3221,10 +3152,9 @@
 				this.addMenuItems(menu, ['copyAsImage']);
 			}
 			
-			this.addMenuItems(menu, ['paste', 'delete', '-', 'duplicate', '-',
-									 'find', '-', 'editData', 'editTooltip', '-', 'editStyle', 'editGeometry', '-',
-			                         'edit', '-', 'editLink', 'openLink', '-',
-			                         'selectVertices', 'selectEdges', 'selectAll', 'selectNone', '-', 'lockUnlock']);
+			this.addMenuItems(menu, ['paste', 'delete', '-', 'duplicate', '-', 'find', '-', 'editData', 'editTooltip', '-',
+				 'editStyle',  'editGeometry', '-', 'edit', '-', 'editLink', 'openLink', '-',
+                 'selectVertices', 'selectEdges', 'selectAll', 'selectNone', '-', 'lockUnlock']);
 		})));
 
 		var action = editorUi.actions.addAction('comments', mxUtils.bind(this, function()
@@ -3345,7 +3275,7 @@
 
 			if (urlParams['embed'] != '1')
 			{
-				this.addMenuItems(menu, ['autosave', 'compressed'], parent);
+				this.addMenuItems(menu, ['autosave'], parent);
 			}
 			
 			menu.addSeparator(parent);
@@ -3367,7 +3297,7 @@
 					var tempDlg = new TemplatesDialog();
 					editorUi.showDialog(tempDlg.container, tempDlg.width, tempDlg.height, true, false, null, false, true);
 					tempDlg.init(editorUi, function(xml){console.log(xml)}, null,
-							null, null, "user", function(callback, username)
+							null, null, 'user', function(callback, username)
 					{
 						setTimeout(function(){
 							username? callback([
@@ -3432,14 +3362,29 @@
 					this.addMenuItems(menu, ['-', 'revisionHistory'], parent);
 				}
 				
-				this.addMenuItems(menu, ['-', 'pageSetup', 'print', '-', 'rename', urlParams['noSaveBtn'] == '1'? 'saveAndExit' : 'save'], parent);
+				this.addMenuItems(menu, ['-', 'pageSetup', 'print', '-', 'rename'], parent);
 				
-				if (urlParams['saveAndExit'] == '1' && urlParams['noSaveBtn'] != '1')
+				if (urlParams['noSaveBtn'] == '1')
 				{
-					this.addMenuItems(menu, ['saveAndExit'], parent);
+					if (urlParams['saveAndExit'] != '0')
+					{
+						this.addMenuItems(menu, ['saveAndExit'], parent);
+					}
+				}
+				else
+				{
+					this.addMenuItems(menu, ['save'], parent);
+					
+					if (urlParams['saveAndExit'] == '1')
+					{
+						this.addMenuItems(menu, ['saveAndExit'], parent);
+					}
 				}
 				
-				this.addMenuItems(menu, ['exit'], parent);
+				if (urlParams['noExitBtn'] != '1')
+				{
+					this.addMenuItems(menu, ['exit'], parent);
+				}
 			}
 			else
 			{
@@ -3482,7 +3427,8 @@
 				else
 				{
 					if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
-						file != null && file.constructor != LocalFile)
+						file != null && (file.constructor != LocalFile ||
+						file.fileHandle != null))
 					{	
 						menu.addSeparator(parent);
 						var item = this.addMenuItem(menu, 'synchronize', parent);
@@ -3493,10 +3439,17 @@
 						}
 					}
 					
-					this.addMenuItems(menu, ['-', 'save', 'saveAs'], parent);
+					this.addMenuItems(menu, ['-', 'save', 'saveAs', '-'], parent);
 					
-					this.addMenuItems(menu, ['-', 'rename'], parent);
-
+					if (!mxClient.IS_CHROMEAPP && !EditorUi.isElectronApp &&
+						editorUi.getServiceName() == 'draw.io' &&
+						!editorUi.isOfflineApp() && file != null)
+					{
+						this.addMenuItems(menu, ['share', '-'], parent);
+					}
+					
+					this.addMenuItems(menu, ['rename'], parent);
+					
 					if (editorUi.isOfflineApp())
 					{
 						if (navigator.onLine && urlParams['stealth'] != '1')
@@ -3602,15 +3555,27 @@
 		//Replace the default font family menu
 		this.put('fontFamily', new Menu(mxUtils.bind(this, function(menu, parent)
 		{
-			var addItem = mxUtils.bind(this, function(fontname, fontUrl, deletable)
+			var addItem = mxUtils.bind(this, function(fontName, fontUrl, deletable, fontLabel, tooltip)
 			{
 				var graph = this.editorUi.editor.graph;
-				
-				var tr = this.styleChange(menu, fontname, [mxConstants.STYLE_FONTFAMILY], [fontname], null, parent, function()
+
+				var tr = this.styleChange(menu, fontLabel || fontName,
+					(urlParams['ext-fonts'] != '1') ?
+						[mxConstants.STYLE_FONTFAMILY, 'fontSource', 'FType'] : [mxConstants.STYLE_FONTFAMILY],
+					(urlParams['ext-fonts'] != '1') ?
+						[fontName, (fontUrl != null) ? encodeURIComponent(fontUrl) : null, null] : [fontName],
+					null, parent, function()
 				{
-					document.execCommand('fontname', false, fontname);
-					//Add the font to the file in case it was a previous font from the settings
-					graph.addExtFont(fontname, fontUrl);
+					if (urlParams['ext-fonts'] != '1')
+					{
+						graph.setFont(fontName, fontUrl);
+					}
+					else
+					{
+						document.execCommand('fontname', false, fontName);
+						//Add the font to the file in case it was a previous font from the settings
+						graph.addExtFont(fontName, fontUrl);
+					}
 				}, function()
 				{
 					graph.updateLabelElements(graph.getSelectionCells(), function(elt)
@@ -3625,7 +3590,10 @@
 					});
 					
 					//Add the font to the file in case it was a previous font from the settings
-					graph.addExtFont(fontname, fontUrl);
+					if (urlParams['ext-fonts'] == '1')
+					{
+						graph.addExtFont(fontName, fontUrl);
+					}
 				});
 				
 				if (deletable)
@@ -3638,40 +3606,65 @@
 					
 					mxEvent.addListener(img, (mxClient.IS_POINTER) ? 'pointerup' : 'mouseup', mxUtils.bind(this, function(evt)
 					{
-						var extFonts = mxUtils.clone(this.editorUi.editor.graph.extFonts);
-						
-						if (extFonts != null && extFonts.length > 0)
+						if (urlParams['ext-fonts'] != '1')
 						{
-							for (var i = 0; i < extFonts.length; i++)
+							delete Graph.recentCustomFonts[fontName.toLowerCase()];
+							
+							for (var i = 0; i < this.customFonts.length; i++)
 							{
-								if (extFonts[i].name == fontname)
+								if (this.customFonts[i].name == fontName &&
+									this.customFonts[i].url == fontUrl)
 								{
-									extFonts.splice(i, 1);
+									this.customFonts.splice(i, 1);
+									editorUi.fireEvent(new mxEventObject('customFontsChanged'));
+									
 									break;
 								}
 							}
 						}
-						
-						var customFonts = mxUtils.clone(this.customFonts);
-						
-						for (var i = 0; i < customFonts.length; i++)
+						else
 						{
-							if (customFonts[i].name == fontname)
+							var extFonts = mxUtils.clone(this.editorUi.editor.graph.extFonts);
+							
+							if (extFonts != null && extFonts.length > 0)
 							{
-								customFonts.splice(i, 1);
-								break;
+								for (var i = 0; i < extFonts.length; i++)
+								{
+									if (extFonts[i].name == fontName)
+									{
+										extFonts.splice(i, 1);
+										break;
+									}
+								}
 							}
+							
+							var customFonts = mxUtils.clone(this.customFonts);
+							
+							for (var i = 0; i < customFonts.length; i++)
+							{
+								if (customFonts[i].name == fontName)
+								{
+									customFonts.splice(i, 1);
+									break;
+								}
+							}
+							
+							var change = new ChangeExtFonts(this.editorUi, extFonts, customFonts);
+							this.editorUi.editor.graph.model.execute(change);
 						}
-						
-						var change = new ChangeExtFonts(this.editorUi, extFonts, customFonts);
-						this.editorUi.editor.graph.model.execute(change);
 						
 						this.editorUi.menubar.hideMenu();
 						mxEvent.consume(evt);
 					}));
 				}
 				
-				tr.firstChild.nextSibling.style.fontFamily = fontname;
+				Graph.addFont(fontName, fontUrl);
+				tr.firstChild.nextSibling.style.fontFamily = fontName;
+				
+				if (tooltip != null)
+				{
+					tr.setAttribute('title', tooltip);
+				}
 			});
 			
 			for (var i = 0; i < this.defaultFonts.length; i++)
@@ -3681,134 +3674,307 @@
 
 			menu.addSeparator(parent);
 			
-			//Load custom fonts already in the Graph
-			var extFonts = this.editorUi.editor.graph.extFonts;
-			
-			//Merge external fonts with custom fonts
-			if (extFonts != null && extFonts.length > 0)
+			if (urlParams['ext-fonts'] != '1')
 			{
-				var custMap = {}, changed = false;
+				// Special entries in the font menu are composed of custom fonts
+				// from the local storage and actual used fonts in the file
+				var duplicates = {};
+				var fontNames = {};
+				var entries = [];
 				
-				for (var i = 0; i < this.customFonts.length; i++)
+				function addEntry(entry)
 				{
-					custMap[this.customFonts[i].name] = true;
-				}
-				
-				for (var i = 0; i < extFonts.length; i++)
-				{
-					if (!custMap[extFonts[i].name])
-					{
-						this.customFonts.push(extFonts[i]);
-						changed = true;
-					}
-				}
-				
-				if (changed)
-				{
-					this.editorUi.fireEvent(new mxEventObject('customFontsChanged', 'customFonts', this.customFonts));
-				}
-			}
-			
-			if (this.customFonts.length > 0)
-			{
-				for (var i = 0; i < this.customFonts.length; i++)
-				{
-					var name = this.customFonts[i].name, url = this.customFonts[i].url;
-					addItem(name, url, true);
+					var key = encodeURIComponent(entry.name) +
+						((entry.url == null) ? '' :
+						'@' + encodeURIComponent(entry.url));
+					var label = entry.name;
+					var counter = 0;
 					
-					//Load external fonts without saving them to the file
-					this.editorUi.editor.graph.addExtFont(name, url, true);
+					while (fontNames[label.toLowerCase()] != null)
+					{
+						label = entry.name + ' (' + (++counter) + ')';
+					}
+					
+					if (duplicates[key] == null)
+					{
+						entries.push({name: entry.name, url: entry.url,
+							label: label, title: entry.url});
+						fontNames[label.toLowerCase()] = entry;
+						duplicates[key] = entry;
+					}
+				};
+				
+				// Adds custom user defined fonts from local storage
+				for (var i = 0; i < this.customFonts.length; i++)
+				{
+					addEntry(this.customFonts[i], false);
 				}
 				
-				menu.addSeparator(parent);
+				// Adds fonts that were recently used in the editor
+				for (var key in Graph.recentCustomFonts)
+				{
+					addEntry(Graph.recentCustomFonts[key], true);
+				}
+				
+				// Sorts by label
+				entries.sort(function(a, b)
+				{
+					if (a.label < b.label)
+					{
+						return -1;
+					}
+					else if (a.label > b.label)
+					{
+						return 1;
+					}
+					else
+					{
+						return 0;
+					}
+				});
+				
+				if (entries.length > 0)
+				{
+					for (var i = 0; i < entries.length; i++)
+					{
+						addItem(entries[i].name, entries[i].url, true,
+							entries[i].label, entries[i].url);
+					}
+	
+					menu.addSeparator(parent);
+				}
 				
 				menu.addItem(mxResources.get('reset'), null, mxUtils.bind(this, function()
 				{
-					var change = new ChangeExtFonts(this.editorUi, [], []);
-					this.editorUi.editor.graph.model.execute(change);
+					Graph.recentCustomFonts = {};
+					this.customFonts = [];
+					editorUi.fireEvent(new mxEventObject('customFontsChanged'));
 				}), parent);
 				
 				menu.addSeparator(parent);
+			}
+			else
+			{
+				//Load custom fonts already in the Graph
+				var extFonts = this.editorUi.editor.graph.extFonts;
+				
+				//Merge external fonts with custom fonts
+				if (extFonts != null && extFonts.length > 0)
+				{
+					var custMap = {}, changed = false;
+					
+					for (var i = 0; i < this.customFonts.length; i++)
+					{
+						custMap[this.customFonts[i].name] = true;
+					}
+					
+					for (var i = 0; i < extFonts.length; i++)
+					{
+						if (!custMap[extFonts[i].name])
+						{
+							this.customFonts.push(extFonts[i]);
+							changed = true;
+						}
+					}
+					
+					if (changed)
+					{
+						this.editorUi.fireEvent(new mxEventObject('customFontsChanged', 'customFonts', this.customFonts));
+					}
+				}
+				
+				if (this.customFonts.length > 0)
+				{
+					for (var i = 0; i < this.customFonts.length; i++)
+					{
+						var name = this.customFonts[i].name, url = this.customFonts[i].url;
+						addItem(name, url, true);
+						
+						//Load external fonts without saving them to the file
+						this.editorUi.editor.graph.addExtFont(name, url, true);
+					}
+					
+					menu.addSeparator(parent);
+					
+					menu.addItem(mxResources.get('reset'), null, mxUtils.bind(this, function()
+					{
+						var change = new ChangeExtFonts(this.editorUi, [], []);
+						editorUi.editor.graph.model.execute(change);
+					}), parent);
+					
+					menu.addSeparator(parent);
+				}
 			}
 			
 			menu.addItem(mxResources.get('custom') + '...', null, mxUtils.bind(this, function()
 			{
 				var graph = this.editorUi.editor.graph;
-				var curFontname = mxConstants.DEFAULT_FONTFAMILY;
+				var curFontName = graph.getStylesheet().getDefaultVertexStyle()
+					[mxConstants.STYLE_FONTFAMILY];
 				var curType = 's';
 				var curUrl = null;
-		    	var state = graph.getView().getState(graph.getSelectionCell());
-		    	
-		    	if (state != null)
-		    	{
-		    		curFontname = state.style[mxConstants.STYLE_FONTFAMILY] || curFontname;
-		    		curType = state.style['FType'] || curType;
-		    		
-		    		if (curType == 'w')
-	    			{
-		    			var extFonts = this.editorUi.editor.graph.extFonts;
-		    			var webFont = null;
-		    			
-		    			if (extFonts != null)
-	    				{
-		    				webFont = extFonts.find(function(ef)
-    						{
-		    					return ef.name == curFontname;
-    						});
-		    			}
-		    			
-		    			curUrl = webFont != null? webFont.url : mxResources.get('urlNofFound', null, 'URL not found');
-		    			
-		    			if (curUrl.indexOf(PROXY_URL) == 0)
-	    				{
-		    				curUrl = decodeURIComponent(curUrl.substr((PROXY_URL + '?url=').length));
-	    				}
-	    			}
-		    	}
-		    	
-				var dlg = new FontDialog(this.editorUi, curFontname, curUrl, curType, mxUtils.bind(this, function(fontName, fontUrl, type)
+				
+				// Handles in-place editing custom fonts via font family lookup
+				if (urlParams['ext-fonts'] != '1' && graph.isEditing())
 				{
-					if (fontName != null && fontName.length > 0)
+					var node = graph.getSelectedEditingElement();
+
+					if (node != null)
 					{
-						graph.getModel().beginUpdate();
-						
-						try
+						var css = mxUtils.getCurrentStyle(node);
+
+						if (css != null)
 						{
-							graph.stopEditing(false);
-							graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, fontName);
+							curFontName = Graph.stripQuotes(css.fontFamily);
+							curUrl = Graph.getFontUrl(curFontName, null);
 							
-							if (type != 's')
+							if (curUrl != null)
 							{
-								graph.setCellStyles('FType', type);
-								
-								if (fontUrl.indexOf('http://') == 0)
-								{
-									fontUrl = PROXY_URL + '?url=' + encodeURIComponent(fontUrl);
-								}
-								
-								this.editorUi.editor.graph.addExtFont(fontName, fontUrl);
-							}
-							
-							var addToCustom = true;
-							
-							for (var i = 0; i < this.customFonts.length; i++)
-							{
-								if (this.customFonts[i].name == fontName)
-								{
-									addToCustom = false;
-									break;
-								}
-							}
-							
-							if (addToCustom)
-							{
-								this.customFonts.push({name: fontName, url: fontUrl});
-								this.editorUi.fireEvent(new mxEventObject('customFontsChanged', 'customFonts', this.customFonts));
+			    				if (Graph.isGoogleFontUrl(curUrl))
+			    				{
+			    					curUrl = null;
+			    					curType = 'g';
+			    				}
+			    				else
+			    				{
+			    					curType = 'w';
+			    				}
 							}
 						}
-						finally
+					}
+				}
+				else
+				{
+			    	var state = graph.getView().getState(graph.getSelectionCell());
+			    	
+			    	if (state != null)
+			    	{
+			    		curFontName = state.style[mxConstants.STYLE_FONTFAMILY] || curFontName;
+			    		
+			    		if (urlParams['ext-fonts'] != '1')
+			    		{
+			    			var temp = state.style['fontSource'];
+			    			
+			    			if (temp != null)
+			    			{
+				    			temp = decodeURIComponent(temp);
+								
+			    				if (Graph.isGoogleFontUrl(temp))
+			    				{
+			    					curType = 'g';
+			    				}
+			    				else
+			    				{
+			    					curType = 'w';
+				    				curUrl = temp;
+			    				}
+			    			}
+			    		}
+			    		else
+			    		{
+			    			curType = state.style['FType'] || curType;
+			    		
+			    			if (curType == 'w')
+			    			{
+				    			var extFonts = this.editorUi.editor.graph.extFonts;
+				    			var webFont = null;
+				    			
+				    			if (extFonts != null)
+			    				{
+				    				webFont = extFonts.find(function(ef)
+		    						{
+				    					return ef.name == curFontName;
+		    						});
+				    			}
+				    			
+				    			// TODO: Resource is not defined
+				    			curUrl = webFont != null? webFont.url : mxResources.get('urlNotFound', null, 'URL not found');
+			    			}
+			    		}
+			    	}
+				}
+		    	
+    			if (curUrl != null && curUrl.substring(0, PROXY_URL.length) == PROXY_URL)
+				{
+    				curUrl = decodeURIComponent(curUrl.substr((PROXY_URL + '?url=').length));
+				}
+		    	
+		    	// Saves the current selection state
+		    	var selState = null;
+		    	
+		    	if (document.activeElement == graph.cellEditor.textarea)
+				{
+					selState = graph.cellEditor.saveSelection();
+				}
+		    	
+				var dlg = new FontDialog(this.editorUi, curFontName, curUrl, curType, mxUtils.bind(this, function(fontName, fontUrl, type)
+				{
+					// Restores the selection state
+					if (selState != null)
+					{
+						graph.cellEditor.restoreSelection(selState);
+						selState = null;
+					}
+					
+					if (fontName != null && fontName.length > 0)
+					{
+						if (urlParams['ext-fonts'] != '1' && graph.isEditing())
 						{
-							graph.getModel().endUpdate();
+							graph.setFont(fontName, fontUrl);
+						}
+						else
+						{
+							graph.getModel().beginUpdate();
+							
+							try
+							{
+								graph.stopEditing(false);
+								
+								if (urlParams['ext-fonts'] != '1')
+								{
+									graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, fontName);
+									graph.setCellStyles('fontSource', (fontUrl != null) ?
+										encodeURIComponent(fontUrl) : null);
+									graph.setCellStyles('FType', null);
+								}
+								else
+								{
+									graph.setCellStyles(mxConstants.STYLE_FONTFAMILY, fontName);
+									
+									if (type != 's')
+									{
+										graph.setCellStyles('FType', type);
+										
+										if (fontUrl.indexOf('http://') == 0)
+										{
+											fontUrl = PROXY_URL + '?url=' + encodeURIComponent(fontUrl);
+										}
+										
+										this.editorUi.editor.graph.addExtFont(fontName, fontUrl);
+									}
+								}
+								
+								var addToCustom = true;
+								
+								for (var i = 0; i < this.customFonts.length; i++)
+								{
+									if (this.customFonts[i].name == fontName)
+									{
+										addToCustom = false;
+										break;
+									}
+								}
+								
+								if (addToCustom)
+								{
+									this.customFonts.push({name: fontName, url: fontUrl});
+									this.editorUi.fireEvent(new mxEventObject('customFontsChanged', 'customFonts', this.customFonts));
+								}
+							}
+							finally
+							{
+								graph.getModel().endUpdate();
+							}
 						}
 					}
 				}));

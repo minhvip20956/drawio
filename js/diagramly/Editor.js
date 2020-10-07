@@ -4,6 +4,20 @@
  */
 (function()
 {
+	if (typeof html4 !== 'undefined')
+	{
+		/**
+		 * Enables paste from Lucidchart
+		 */
+		html4.ATTRIBS["span::data-lucid-content"] = 0;
+		html4.ATTRIBS["span::data-lucid-type"] = 0;
+		
+		/**
+		 * Enables custom fonts in labels.
+		 */
+		html4.ATTRIBS['font::data-font-src'] = 0;
+	}
+	
 	/**
 	 * Specifies the app name. Default is document.title.
 	 */
@@ -25,12 +39,69 @@
 	Editor.prototype.libraryFileTypes = [{description: 'Library (.drawiolib, .xml)', extensions: ['drawiolib', 'xml']}];
 
 	/**
-	 * Known extensions for own files.
+	 * Additional help text for special file extensions.
 	 */
 	Editor.prototype.fileExtensions = [
 		{ext: 'html', title: 'filetypeHtml'},
 		{ext: 'png', title: 'filetypePng'},
 		{ext: 'svg', title: 'filetypeSvg'}];
+	
+	/**
+	 * 
+	 */
+	Editor.styles = [{},
+		{commonStyle: {fontColor: '#5C5C5C', strokeColor: '#006658', fillColor: '#21C0A5'}},
+		{commonStyle: {fontColor: '#095C86', strokeColor: '#AF45ED', fillColor: '#F694C1'},
+			edgeStyle: {strokeColor: '#60E696'}},
+		{commonStyle: {fontColor: '#46495D', strokeColor: '#788AA3', fillColor: '#B2C9AB'}},
+		{commonStyle: {fontColor: '#5AA9E6', strokeColor: '#FF6392', fillColor: '#FFE45E'}},
+		{commonStyle: {fontColor: '#1D3557', strokeColor: '#457B9D', fillColor: '#A8DADC'},	
+			graph: {background: '#F1FAEE'}},
+		{commonStyle: {fontColor: '#393C56', strokeColor: '#E07A5F', fillColor: '#F2CC8F'},	
+			graph: {background: '#F4F1DE', gridColor: '#D4D0C0'}},
+		{commonStyle: {fontColor: '#143642', strokeColor: '#0F8B8D', fillColor: '#FAE5C7'},
+			edgeStyle: {strokeColor: '#A8201A'},
+			graph: {background: '#DAD2D8', gridColor: '#ABA4A9'}},
+		{commonStyle: {fontColor: '#FEFAE0', strokeColor: '#DDA15E', fillColor: '#BC6C25'},
+			graph: {background: '#283618', gridColor: '#48632C'}},
+		{commonStyle: {fontColor: '#E4FDE1', strokeColor: '#028090', fillColor: '#F45B69'},
+			graph: {background: '#114B5F', gridColor: '#0B3240'}},
+		{},
+		{vertexStyle: {strokeColor: '#D0CEE2', fillColor: '#FAD9D5'},
+			edgeStyle: {strokeColor: '#09555B'},
+			commonStyle: {fontColor: '#1A1A1A'}},
+		{vertexStyle: {strokeColor: '#BAC8D3', fillColor: '#09555B', fontColor: '#EEEEEE'},
+			edgeStyle: {strokeColor: '#0B4D6A'}},
+		{vertexStyle: {strokeColor: '#D0CEE2', fillColor: '#5D7F99'},
+			edgeStyle: {strokeColor: '#736CA8'},
+			commonStyle: {fontColor: '#1A1A1A'}},
+		{vertexStyle: {strokeColor: '#FFFFFF', fillColor: '#182E3E', fontColor: '#FFFFFF'},
+			edgeStyle: {strokeColor: '#23445D'},
+			graph: {background: '#FCE7CD', gridColor: '#CFBDA8'}},
+		{vertexStyle: {strokeColor: '#FFFFFF', fillColor: '#F08E81'},
+			edgeStyle: {strokeColor: '#182E3E'},
+			commonStyle: {fontColor: '#1A1A1A'},
+			graph: {background: '#B0E3E6', gridColor: '#87AEB0'}},
+		{vertexStyle: {strokeColor: '#909090', fillColor: '#F5AB50'},
+			edgeStyle: {strokeColor: '#182E3E'},
+			commonStyle: {fontColor: '#1A1A1A'},
+			graph: {background: '#EEEEEE'}},
+		{vertexStyle: {strokeColor: '#EEEEEE', fillColor: '#56517E', fontColor: '#FFFFFF'},
+			edgeStyle: {strokeColor: '#182E3E'},
+			graph: {background: '#FAD9D5', gridColor: '#BFA6A3'}},
+		{vertexStyle: {strokeColor: '#BAC8D3', fillColor: '#B1DDF0', fontColor: '#182E3E'},
+			edgeStyle: {strokeColor: '#EEEEEE', fontColor: '#FFFFFF'},
+			graph: {background: '#09555B', gridColor: '#13B4C2'}},
+		{vertexStyle: {fillColor: '#EEEEEE', fontColor: '#1A1A1A'},
+			edgeStyle: {fontColor: '#FFFFFF'},
+			commonStyle: {strokeColor: '#FFFFFF'},
+			graph: {background: '#182E3E', gridColor: '#4D94C7'}}
+	];
+	
+	/**
+	 * 
+	 */
+	Editor.saveImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siIHdpZHRoPSIxOHB4IiBoZWlnaHQ9IjE4cHgiPjxwYXRoIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNMTkgMTJ2N0g1di03SDN2N2MwIDEuMS45IDIgMiAyaDE0YzEuMSAwIDItLjkgMi0ydi03aC0yem0tNiAuNjdsMi41OS0yLjU4TDE3IDExLjVsLTUgNS01LTUgMS40MS0xLjQxTDExIDEyLjY3VjNoMnoiLz48L3N2Zz4=';
 
 	/**
 	 * Used in the GraphViewer lightbox.
@@ -163,7 +234,78 @@
 	 * mxSettings.parse, then the settings are reset.
 	 */
 	Editor.configVersion = null;
-	
+
+	/**
+	 * Default border for image export (to allow for sketch style).
+	 */
+	Editor.defaultBorder = 5;
+
+	/**
+	 * Common properties for all edges.
+	 */
+	Editor.commonProperties = [
+        {name: 'comic', dispName: 'Comic', type: 'bool', defVal: false, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', '0') != '1';
+        }},
+        {name: 'jiggle', dispName: 'Jiggle', type: 'float', min: 0, defVal: 1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'comic', '0') == '1' ||
+        		mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'fillWeight', dispName: 'Fill Weight', type: 'int', defVal: -1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'hachureGap', dispName: 'Hachure Gap', type: 'int', defVal: -1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'hachureAngle', dispName: 'Hachure Angle', type: 'int', defVal: -41, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'curveFitting', dispName: 'Curve Fitting', type: 'float', defVal: 0.95, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'simplification', dispName: 'Simplification', type: 'float', defVal: 0, min: 0, max: 1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'disableMultiStroke', dispName: 'Disable Multi Stroke', type: 'bool', defVal: false, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'disableMultiStrokeFill', dispName: 'Disable Multi Stroke Fill', type: 'bool', defVal: false, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'dashOffset', dispName: 'Dash Offset', type: 'int', defVal: -1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'dashGap', dispName: 'Dash Gap', type: 'int', defVal: -1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'zigzagOffset', dispName: 'ZigZag Offset', type: 'int', defVal: -1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'jiggle', dispName: 'Jiggle', type: 'float', min: 0, defVal: 1, isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'comic', '0') == '1' ||
+        		mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }},
+        {name: 'sketchStyle', dispName: 'Sketch Style', type: 'enum', defVal: 'rough',
+        	enumList: [{val: 'rough', dispName: 'Rough'}, {val: 'comic', dispName: 'Comic'}],
+        	isVisible: function(state, format)
+        {
+        	return mxUtils.getValue(state.style, 'sketch', (urlParams['rough'] == '1') ? '1' : '0') == '1';
+        }}
+	];
+
 	/**
 	 * Common properties for all edges.
 	 */
@@ -188,11 +330,8 @@
         {name: 'anchorPointDirection', dispName: 'Anchor Direction', type: 'bool', defVal: true},
         {name: 'snapToPoint', dispName: 'Snap to Point', type: 'bool', defVal: false},
         {name: 'fixDash', dispName: 'Fixed Dash', type: 'bool', defVal: false},
-        {name: 'jiggle', dispName: 'Jiggle', type: 'float', min: 0, defVal: 1.5, isVisible: function(state)
-        {
-        	return mxUtils.getValue(state.style, 'comic', '0') == '1';
-        }},
         {name: 'editable', dispName: 'Editable', type: 'bool', defVal: true},
+        {name: 'metaEdit', dispName: 'Edit Dialog', type: 'bool', defVal: false},
         {name: 'backgroundOutline', dispName: 'Background Outline', type: 'bool', defVal: false},
         {name: 'bendable', dispName: 'Bendable', type: 'bool', defVal: true},
         {name: 'movable', dispName: 'Movable', type: 'bool', defVal: true},
@@ -200,13 +339,41 @@
         {name: 'deletable', dispName: 'Deletable', type: 'bool', defVal: true},
         {name: 'orthogonalLoop', dispName: 'Loop Routing', type: 'bool', defVal: false},
         {name: 'noJump', dispName: 'No Jumps', type: 'bool', defVal: false}
-	];
+	].concat(Editor.commonProperties);
 
 	/**
 	 * Common properties for all vertices.
 	 */
 	Editor.commonVertexProperties = [
         {type: 'separator'},
+        {name: 'resizeLastRow', dispName: 'Resize Last Row', type: 'bool', getDefaultValue: function(state, format)
+        {
+        	var cell = (state.vertices.length == 1 && state.edges.length == 0) ? state.vertices[0] : null;
+        	var graph = format.editorUi.editor.graph;
+        	var style = graph.getCellStyle(cell);
+        	
+        	return mxUtils.getValue(style, 'resizeLastRow', '0') == '1';
+        }, isVisible: function(state, format)
+        {
+        	var graph = format.editorUi.editor.graph;
+        	
+    		return state.vertices.length == 1 && state.edges.length == 0 &&
+    			graph.isTable(state.vertices[0]);
+        }},
+        {name: 'resizeLast', dispName: 'Resize Last Column', type: 'bool', getDefaultValue: function(state, format)
+        {
+        	var cell = (state.vertices.length == 1 && state.edges.length == 0) ? state.vertices[0] : null;
+        	var graph = format.editorUi.editor.graph;
+        	var style = graph.getCellStyle(cell);
+        	
+        	return mxUtils.getValue(style, 'resizeLast', '0') == '1';
+        }, isVisible: function(state, format)
+        {
+        	var graph = format.editorUi.editor.graph;
+        	
+    		return state.vertices.length == 1 && state.edges.length == 0 &&
+    			graph.isTable(state.vertices[0]);
+        }},
         {name: 'fillOpacity', dispName: 'Fill Opacity', type: 'int', min: 0, max: 100, defVal: 100},
         {name: 'strokeOpacity', dispName: 'Stroke Opacity', type: 'int', min: 0, max: 100, defVal: 100},
         {name: 'overflow', dispName: 'Text Overflow', defVal: 'visible', type: 'enum',
@@ -221,7 +388,16 @@
         	enumList: [{val: 'none', dispName: 'None'}, {val: 'north', dispName: 'North'}, {val: 'east', dispName: 'East'}, {val: 'south', dispName: 'South'}, {val: 'west', dispName: 'West'}]
         },
         {name: 'portConstraintRotation', dispName: 'Rotate Constraint', type: 'bool', defVal: false},
-        {name: 'connectable', dispName: 'Connectable', type: 'bool', defVal: true},
+        {name: 'connectable', dispName: 'Connectable', type: 'bool', getDefaultValue: function(state, format)
+        {
+        	var cell = (state.vertices.length == 1 && state.edges.length == 0) ? state.vertices[0] : null;
+        	var graph = format.editorUi.editor.graph;
+        	
+        	return graph.isCellConnectable(cell);
+        }, isVisible: function(state, format)
+        {
+    		return state.vertices.length == 1 && state.edges.length == 0;
+        }},
         {name: 'allowArrows', dispName: 'Allow Arrows', type: 'bool', defVal: true},
         {name: 'snapToPoint', dispName: 'Snap to Point', type: 'bool', defVal: false},
         {name: 'perimeter', dispName: 'Perimeter', defVal: 'none', type: 'enum',
@@ -234,10 +410,6 @@
         			{val: 'trapezoidPerimeter', dispName: 'Trapezoid'}, {val: 'stepPerimeter', dispName: 'Step'}]
         },
         {name: 'fixDash', dispName: 'Fixed Dash', type: 'bool', defVal: false},
-        {name: 'jiggle', dispName: 'Jiggle', type: 'float', min: 0, defVal: 1.5, isVisible: function(state, format)
-        {
-        	return mxUtils.getValue(state.style, 'comic', '0') == '1';
-        }},
         {name: 'autosize', dispName: 'Autosize', type: 'bool', defVal: false},
         {name: 'container', dispName: 'Container', type: 'bool', defVal: false, isVisible: function(state, format)
         {
@@ -278,6 +450,7 @@
         	return (state.vertices.length > 0) ? model.isVertex(model.getParent(state.vertices[0])) : false;
         }},
         {name: 'editable', dispName: 'Editable', type: 'bool', defVal: true},
+        {name: 'metaEdit', dispName: 'Edit Dialog', type: 'bool', defVal: false},
         {name: 'backgroundOutline', dispName: 'Background Outline', type: 'bool', defVal: false},
         {name: 'movable', dispName: 'Movable', type: 'bool', defVal: true},
         {name: 'movableLabel', dispName: 'Movable Label', type: 'bool', defVal: false, isVisible: function(state, format)
@@ -298,13 +471,15 @@
         {
         	var fillColor = mxUtils.getValue(state.style, mxConstants.STYLE_FILLCOLOR, null);
         	
-        	return fillColor == null || fillColor == mxConstants.NONE;
+        	return format.editorUi.editor.graph.isSwimlane(state.vertices[0]) ||
+        		fillColor == null || fillColor == mxConstants.NONE;
         }},
         {name: 'moveCells', dispName: 'Move Cells on Fold', type: 'bool', defVal: false, isVisible: function(state, format)
         {
         	return state.vertices.length > 0 && format.editorUi.editor.graph.isContainer(state.vertices[0]);
         }}
-	];
+	].concat(Editor.commonProperties);
+	
 	/**
 	 * Default value for the CSV import dialog.
 	 */
@@ -337,6 +512,11 @@
 		'## placeholders that are replaced once.\n' +
 		'#\n' +
 		'# styles: -\n' +
+		'#\n' +
+		'## JSON for variables in styles of the form {"name": "value", "name": "value"} where name is a string\n' +
+		'## that will replace a placeholder in a style.\n' +
+		'#\n' +
+		'# vars: -\n' +
 		'#\n' +
 		'## Optional column name that contains a reference to a named label in labels.\n' +
 		'## Default is the current label.\n' +
@@ -371,6 +551,9 @@
 		'## In addition to label, an optional fromlabel and tolabel can be used to name the column\n' +
 		'## that contains the text for the label in the edges source or target (invert ignored).\n' +
 		'## The label is concatenated in the form fromlabel + label + tolabel if all are defined.\n' +
+		'## Additional labels can be added by using an optional labels array with entries of the\n' +
+		'## form {"label": string, "x": number, "y": number, "dx": number, "dy": number} where\n' +
+		'## x is from -1 to 1 along the edge, y is orthogonal, and dx/dy are offsets in pixels.\n' +
 		'## The target column may contain a comma-separated list of values.\n' +
 		'## Multiple connect entries are allowed.\n' +
 		'#\n' +
@@ -431,10 +614,617 @@
 		'#\n' +
 		'## ---- CSV below this line. First line are column names. ----\n' +
 		'name,position,id,location,manager,email,fill,stroke,refs,url,image\n' +
-		'Evan Miller,CFO,emi,Office 1,,me@example.com,#dae8fc,#6c8ebf,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-9-2-128.png\n' +
-		'Edward Morrison,Brand Manager,emo,Office 2,Evan Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-10-3-128.png\n' +
-		'Ron Donovan,System Admin,rdo,Office 3,Evan Miller,me@example.com,#d5e8d4,#82b366,"emo,tva",https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-2-128.png\n' +
-		'Tessa Valet,HR Director,tva,Office 4,Evan Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-3-128.png\n';
+		'Tessa Miller,CFO,emi,Office 1,,me@example.com,#dae8fc,#6c8ebf,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-3-128.png\n' +
+		'Edward Morrison,Brand Manager,emo,Office 2,Tessa Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-10-3-128.png\n' +
+		'Alison Donovan,System Admin,rdo,Office 3,Tessa Miller,me@example.com,#d5e8d4,#82b366,"emo,tva",https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-2-128.png\n' +
+		'Evan Valet,HR Director,tva,Office 4,Tessa Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-9-2-128.png\n';
+
+	/**
+	 * Compresses the given string.
+	 */
+	Editor.createRoughCanvas = function(c)
+	{
+		var rc = rough.canvas(
+		{
+			// Provides expected function but return value is not used
+			getContext: function()
+			{
+				return c;
+			}
+		});
+	
+		rc.draw = function(drawable)
+		{
+			var sets = drawable.sets || [];
+			var o = drawable.options || this.getDefaultOptions();
+
+			for (var i = 0; i < sets.length; i++)
+			{
+				var drawing = sets[i];
+				
+				switch (drawing.type)
+				{
+					case 'path':
+						if (o.stroke != null)
+						{
+							this._drawToContext(c, drawing, o);
+						}
+						break;
+					case 'fillPath':
+						this._drawToContext(c, drawing, o);
+						break;
+					case 'fillSketch':
+						this.fillSketch(c, drawing, o);
+						break;
+				}
+			}
+		};
+	
+		rc.fillSketch = function(ctx, drawing, o)
+		{
+			var strokeColor = c.state.strokeColor;
+			var strokeWidth = c.state.strokeWidth;
+			var strokeAlpha = c.state.strokeAlpha;
+			var dashed = c.state.dashed;
+			
+			var fweight = o.fillWeight;
+			if (fweight < 0)
+			{
+				fweight = o.strokeWidth / 2;
+			}
+
+			c.setStrokeAlpha(c.state.fillAlpha);
+			c.setStrokeColor(o.fill || '');
+			c.setStrokeWidth(fweight);
+			c.setDashed(false);
+			
+			this._drawToContext(ctx, drawing, o);
+			
+			c.setDashed(dashed);
+			c.setStrokeWidth(strokeWidth);
+			c.setStrokeColor(strokeColor);
+			c.setStrokeAlpha(strokeAlpha);
+		};
+	
+		rc._drawToContext = function(ctx, drawing, o)
+		{
+			ctx.begin();
+			
+			for (var i = 0; i < drawing.ops.length; i++)
+			{
+				var item = drawing.ops[i];
+				var data = item.data;
+				
+				switch (item.op)
+				{
+					case 'move':
+						ctx.moveTo(data[0], data[1]);
+						break;
+					case 'bcurveTo':
+						ctx.curveTo(data[0], data[1], data[2], data[3], data[4], data[5]);
+						break;
+					case 'lineTo':
+						ctx.lineTo(data[0], data[1]);
+						break;
+				}
+			};
+	
+			ctx.end();
+	
+			if (drawing.type === 'fillPath' && o.filled)
+			{
+				ctx.fill();
+			}
+			else
+			{
+				ctx.stroke();
+			}
+		};
+	
+		return rc;
+	};
+	
+	/**
+	 * Uses RoughJs for drawing comic shapes.
+	 */
+	(function()
+	{	
+		/**
+		 * Adds handJiggle style (jiggle=n sets jiggle)
+		 */
+		function RoughCanvas(canvas, rc, shape)
+		{
+			this.canvas = canvas;
+			this.rc = rc;
+			this.shape = shape;
+			
+			// Avoids "spikes" in the output
+			this.canvas.setLineJoin('round');
+			this.canvas.setLineCap('round');
+			
+			this.originalBegin = this.canvas.begin;
+			this.canvas.begin = mxUtils.bind(this, RoughCanvas.prototype.begin);
+			
+			this.originalEnd = this.canvas.end;
+			this.canvas.end = mxUtils.bind(this, RoughCanvas.prototype.end);
+					
+			this.originalRect = this.canvas.rect;
+			this.canvas.rect = mxUtils.bind(this, RoughCanvas.prototype.rect);
+	
+			this.originalRoundrect = this.canvas.roundrect;
+			this.canvas.roundrect = mxUtils.bind(this, RoughCanvas.prototype.roundrect);
+			
+			this.originalEllipse = this.canvas.ellipse;
+			this.canvas.ellipse = mxUtils.bind(this, RoughCanvas.prototype.ellipse);
+			
+			this.originalLineTo = this.canvas.lineTo;
+			this.canvas.lineTo = mxUtils.bind(this, RoughCanvas.prototype.lineTo);
+			
+			this.originalMoveTo = this.canvas.moveTo;
+			this.canvas.moveTo = mxUtils.bind(this, RoughCanvas.prototype.moveTo);
+			
+			this.originalQuadTo = this.canvas.quadTo;
+			this.canvas.quadTo = mxUtils.bind(this, RoughCanvas.prototype.quadTo);
+			
+			this.originalCurveTo = this.canvas.curveTo;
+			this.canvas.curveTo = mxUtils.bind(this, RoughCanvas.prototype.curveTo);
+			
+			this.originalArcTo = this.canvas.arcTo;
+			this.canvas.arcTo = mxUtils.bind(this, RoughCanvas.prototype.arcTo);
+			
+			this.originalClose = this.canvas.close;
+			this.canvas.close = mxUtils.bind(this, RoughCanvas.prototype.close);
+			
+			this.originalFill = this.canvas.fill;
+			this.canvas.fill = mxUtils.bind(this, RoughCanvas.prototype.fill);
+			
+			this.originalStroke = this.canvas.stroke;
+			this.canvas.stroke = mxUtils.bind(this, RoughCanvas.prototype.stroke);
+			
+			this.originalFillAndStroke = this.canvas.fillAndStroke;
+			this.canvas.fillAndStroke = mxUtils.bind(this, RoughCanvas.prototype.fillAndStroke);
+			
+			this.path = [];
+			this.passThrough = false;
+		};
+	
+		RoughCanvas.prototype.moveOp = 'M';
+		RoughCanvas.prototype.lineOp = 'L';
+		RoughCanvas.prototype.quadOp = 'Q';
+		RoughCanvas.prototype.curveOp = 'C';
+		RoughCanvas.prototype.closeOp = 'Z';
+	
+		RoughCanvas.prototype.getStyle = function(stroke, fill)
+		{
+			// Random seed created from cell ID
+			var seed = 1;
+
+			if (this.shape.state != null)
+			{
+				var str = this.shape.state.cell.id;
+				
+				if (str != null)
+				{
+					for (var i = 0; i < str.length; i++)
+					{
+				    	seed = ((seed << 5) - seed + str.charCodeAt(i)) << 0;
+					}
+				}
+			}
+
+			var style = {strokeWidth: this.canvas.state.strokeWidth, seed: seed};
+			var defs = this.rc.getDefaultOptions();
+			
+			if (stroke)
+			{
+				style.stroke = this.canvas.state.strokeColor === 'none' ? 'transparent' : this.canvas.state.strokeColor;
+			}
+			else
+			{
+				delete style.stroke;
+			}
+			
+			var gradient = null;
+			style.filled = fill;
+			
+			if (fill)
+			{
+				style.fill = this.canvas.state.fillColor === 'none' ? '' : this.canvas.state.fillColor;
+				gradient = this.canvas.state.gradientColor === 'none' ? null : this.canvas.state.gradientColor;
+			}
+			else
+			{
+				style.fill == '';
+			}
+			
+			// Applies cell style
+			style['bowing'] = mxUtils.getValue(this.shape.style, 'bowing', defs['bowing']);
+			style['hachureAngle'] = mxUtils.getValue(this.shape.style, 'hachureAngle', defs['hachureAngle']);
+			style['curveFitting'] = mxUtils.getValue(this.shape.style, 'curveFitting', defs['curveFitting']);
+			style['roughness'] = mxUtils.getValue(this.shape.style, 'jiggle', defs['roughness']);
+			style['simplification'] = mxUtils.getValue(this.shape.style, 'simplification', defs['simplification']);
+			style['disableMultiStroke'] = mxUtils.getValue(this.shape.style, 'disableMultiStroke', defs['disableMultiStroke']);
+			style['disableMultiStrokeFill'] = mxUtils.getValue(this.shape.style, 'disableMultiStrokeFill', defs['disableMultiStrokeFill']);
+		
+			var hachureGap = mxUtils.getValue(this.shape.style, 'hachureGap', -1);
+			style['hachureGap'] = (hachureGap == 'auto') ? -1 : hachureGap;
+			style['dashGap'] = mxUtils.getValue(this.shape.style, 'dashGap', hachureGap);
+			style['dashOffset'] = mxUtils.getValue(this.shape.style, 'dashOffset', hachureGap);
+			style['zigzagOffset'] = mxUtils.getValue(this.shape.style, 'zigzagOffset', hachureGap);
+			
+			var fillWeight = mxUtils.getValue(this.shape.style, 'fillWeight', -1);
+			style['fillWeight'] = (fillWeight == 'auto') ? -1 : fillWeight;
+			
+			var fillStyle = mxUtils.getValue(this.shape.style, 'fillStyle', 'auto');
+			
+			if (fillStyle == 'auto')
+			{
+				var bg = (this.shape.state != null) ? this.shape.state.view.graph.defaultPageBackgroundColor : '#ffffff';
+				
+				fillStyle = (style.fill != null && (gradient != null || (bg != null &&
+					style.fill.toLowerCase() == bg.toLowerCase()))) ? 'solid' : defs['fillStyle']
+			}
+			
+			style['fillStyle'] = fillStyle;
+			
+			return style;
+		};
+		
+		RoughCanvas.prototype.begin = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalBegin.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.path = [];
+			}
+		};
+		
+		RoughCanvas.prototype.end = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalEnd.apply(this.canvas, arguments);
+			}
+			else
+			{
+				// do nothing
+			}
+		};
+		
+		RoughCanvas.prototype.addOp = function()
+		{
+			if (this.path != null)
+			{
+				this.path.push(arguments[0]);
+				
+				if (arguments.length > 2)
+				{
+					var s = this.canvas.state;
+		
+					for (var i = 2; i < arguments.length; i += 2)
+					{
+						this.lastX = arguments[i - 1];
+						this.lastY = arguments[i];
+						
+						this.path.push(this.canvas.format((this.lastX)));
+						this.path.push(this.canvas.format((this.lastY)));
+					}
+				}
+			}
+		};
+	
+		RoughCanvas.prototype.lineTo = function(endX, endY)
+		{
+			if (this.passThrough)
+			{
+				this.originalLineTo.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.addOp(this.lineOp, endX, endY);
+				this.lastX = endX;
+				this.lastY = endY;
+			}
+		};
+		
+		RoughCanvas.prototype.moveTo = function(endX, endY)
+		{
+			if (this.passThrough)
+			{
+				this.originalMoveTo.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.addOp(this.moveOp, endX, endY);
+				this.lastX = endX;
+				this.lastY = endY;
+				this.firstX = endX;
+				this.firstY = endY;
+			}
+		};
+		
+		RoughCanvas.prototype.close = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalClose.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.addOp(this.closeOp);
+			}
+		};
+		
+		RoughCanvas.prototype.quadTo = function(x1, y1, x2, y2)
+		{
+			if (this.passThrough)
+			{
+				this.originalQuadTo.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.addOp(this.quadOp, x1, y1, x2, y2);
+				this.lastX = x2;
+				this.lastY = y2;
+			}
+		};
+		
+		RoughCanvas.prototype.curveTo = function(x1, y1, x2, y2, x3, y3)
+		{
+			if (this.passThrough)
+			{
+				this.originalCurveTo.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.addOp(this.curveOp, x1, y1, x2, y2, x3, y3);
+				this.lastX = x3;
+				this.lastY = y3;
+			}
+		};
+		
+		RoughCanvas.prototype.arcTo = function(rx, ry, angle, largeArcFlag, sweepFlag, x, y)
+		{
+			if (this.passThrough)
+			{
+				this.originalArcTo.apply(this.canvas, arguments);
+			}
+			else
+			{
+				var curves = mxUtils.arcToCurves(this.lastX, this.lastY, rx, ry, angle, largeArcFlag, sweepFlag, x, y);
+				
+				if (curves != null)
+				{
+					for (var i = 0; i < curves.length; i += 6) 
+					{
+						this.curveTo(curves[i], curves[i + 1], curves[i + 2],
+							curves[i + 3], curves[i + 4], curves[i + 5]);
+					}
+				}
+				
+				this.lastX = x;
+				this.lastY = y;
+			}
+		};
+			
+		RoughCanvas.prototype.rect = function(x, y, w, h)
+		{
+			if (this.passThrough)
+			{
+				this.originalRect.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.path = [];
+				this.nextShape = this.rc.generator.rectangle(x, y, w, h, this.getStyle(true, true));
+			}
+		};
+	
+		RoughCanvas.prototype.ellipse = function(x, y, w, h)
+		{
+			if (this.passThrough)
+			{
+				this.originalEllipse.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.path = [];
+				this.nextShape = this.rc.generator.ellipse(x + w / 2, y + h / 2, w, h, this.getStyle(true, true));
+			}
+		};
+			
+		RoughCanvas.prototype.roundrect = function(x, y, w, h, dx, dy)
+		{
+			if (this.passThrough)
+			{
+				this.originalRoundrect.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.begin();
+				this.moveTo(x + dx, y);
+				this.lineTo(x + w - dx, y);
+				this.quadTo(x + w, y, x + w, y + dy);
+				this.lineTo(x + w, y + h - dy);
+				this.quadTo(x + w, y + h, x + w - dx, y + h);
+				this.lineTo(x + dx, y + h);
+				this.quadTo(x, y + h, x, y + h - dy);
+				this.lineTo(x, y + dy);
+				this.quadTo(x, y, x + dx, y);
+			}
+		};
+	
+		RoughCanvas.prototype.drawPath = function(style)
+		{
+			if (this.path.length > 0)
+			{
+				this.passThrough = true;
+				try
+				{
+					this.rc.path(this.path.join(' '), style);
+				}
+				catch (e)
+				{
+					// ignore
+				}
+				this.passThrough = false;
+			}
+			else if (this.nextShape != null)
+			{
+				for (var key in style)
+				{
+					this.nextShape.options[key] = style[key];
+				}
+				
+				if (style['stroke'] == null)
+				{
+					delete this.nextShape.options['stroke'];
+				}
+				
+				if (!style.filled)
+				{
+					delete this.nextShape.options['fill'];
+				}
+	
+				this.passThrough = true;
+				this.rc.draw(this.nextShape);
+				this.passThrough = false;
+			}	
+		};
+		
+		RoughCanvas.prototype.stroke = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalStroke.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.drawPath(this.getStyle(true, false));
+			}
+		};
+		
+		RoughCanvas.prototype.fill = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalFill.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.drawPath(this.getStyle(false, true));
+			}
+		};
+		
+		RoughCanvas.prototype.fillAndStroke = function()
+		{
+			if (this.passThrough)
+			{
+				this.originalFillAndStroke.apply(this.canvas, arguments);
+			}
+			else
+			{
+				this.drawPath(this.getStyle(true, true));
+			}
+		};
+		
+		RoughCanvas.prototype.destroy = function()
+		{
+			 this.canvas.lineTo = this.originalLineTo;
+			 this.canvas.moveTo = this.originalMoveTo;
+			 this.canvas.close = this.originalClose;
+			 this.canvas.quadTo = this.originalQuadTo;
+			 this.canvas.curveTo = this.originalCurveTo;
+			 this.canvas.arcTo = this.originalArcTo;
+			 this.canvas.close = this.originalClose;
+			 this.canvas.fill = this.originalFill;
+			 this.canvas.stroke = this.originalStroke;
+			 this.canvas.fillAndStroke = this.originalFillAndStroke;
+			 this.canvas.begin = this.originalBegin;
+			 this.canvas.end = this.originalEnd;
+			 this.canvas.rect = this.originalRect;
+			 this.canvas.ellipse = this.originalEllipse;
+			 this.canvas.roundrect = this.originalRoundrect;
+		};
+				
+		// Returns a new HandJiggle canvas
+		mxShape.prototype.createRoughCanvas = function(c)
+		{
+			return new RoughCanvas(c, Editor.createRoughCanvas(c), this);	
+		};
+			
+		// Overrides to include sketch style
+		var shapeCreateHandJiggle = mxShape.prototype.createHandJiggle;
+		mxShape.prototype.createHandJiggle = function(c)
+		{
+			if (!this.outline && this.style != null && mxUtils.getValue(this.style,
+				'sketch', (urlParams['rough'] == '1') ?'1' : '0') != '0')
+			{
+				if (mxUtils.getValue(this.style, 'sketchStyle', 'rough') == 'comic')
+				{
+					return this.createComicCanvas(c);
+				}
+				else
+				{
+					return this.createRoughCanvas(c);	
+				}
+			}
+			else
+			{
+				return shapeCreateHandJiggle.apply(this, arguments);
+			}
+		};
+		
+		// Overrides for event handling on transparent background for sketch style
+		var shapePaint = mxShape.prototype.paint;
+		mxShape.prototype.paint = function(c)
+		{
+			var fillStyle = null;
+			var events = true;
+			
+			if (this.style != null)
+			{
+				events = mxUtils.getValue(this.style, mxConstants.STYLE_POINTER_EVENTS, '1') == '1';
+				fillStyle = mxUtils.getValue(this.style, 'fillStyle', 'auto');
+				
+				if (this.state != null && fillStyle == 'auto')
+				{
+					var bg = this.state.view.graph.defaultPageBackgroundColor;
+					
+					if (this.fill != null && (this.gradient != null || (bg != null &&
+						this.fill.toLowerCase() == bg.toLowerCase())))
+					{
+						fillStyle = 'solid';
+					}
+				}
+			}
+			
+			if (events && c.handJiggle != null && c.handJiggle.constructor == RoughCanvas &&
+				!this.outline && (this.fill == null || this.fill == mxConstants.NONE ||
+				fillStyle != 'solid'))
+			{
+				// Save needed for possible transforms applied during paint
+				c.save();
+				var fill = this.fill;
+				var stroke = this.stroke;
+				this.fill = null;
+				this.stroke = null;
+				c.handJiggle.passThrough = true;
+
+				shapePaint.apply(this, arguments);
+
+				c.handJiggle.passThrough = false;
+				this.fill = fill;
+				this.stroke = stroke;
+				c.restore();
+			}
+			
+			shapePaint.apply(this, arguments);
+		};
+	})();
 
 	/**
 	 * Compresses the given string.
@@ -855,7 +1645,23 @@
 		
 		return (cause != null) ? mxUtils.trim(cause) : cause;
 	};
-
+	
+	/**
+	 * Adds the given retry function to the given error.
+	 */
+	Editor.addRetryToError = function(err, retry)
+	{
+		if (err != null)
+		{
+			var e = (err.error != null) ? err.error : err;
+			
+			if (e.retry == null)
+			{
+				e.retry = retry;
+			}
+		}
+	};
+	
 	/**
 	 * Global configuration of the Editor
 	 * see https://desk.draw.io/solution/articles/16000058316
@@ -879,6 +1685,11 @@
 			if (config.templateFile != null)
 			{
 				EditorUi.templateFile = config.templateFile;
+			}
+			
+			if (config.styles != null)
+			{
+				Editor.styles = config.styles;
 			}
 			
 			if (config.globalVars != null)
@@ -1016,6 +1827,16 @@
 					mxscript(config.plugins[i]);
 				}
 			}
+			
+			if(config.maxImageBytes != null) 
+			{
+				EditorUi.prototype.maxImageBytes = config.maxImageBytes;
+			}
+			
+			if(config.maxImageSize != null) 
+			{
+				EditorUi.prototype.maxImageSize = config.maxImageSize;
+			}
 		}
 	};
 
@@ -1039,16 +1860,10 @@
 				// Preloads fonts where supported
 				var parts = fontCss.split('url(');
 				
-				// Strips leading and trailing quotes and spaces
-				function trimString(str)
-				{
-				    return str.replace(new RegExp("^[\\s\"']+", "g"), "").replace(new RegExp("[\\s\"']+$", "g"), "");
-				};
-				
 				for (var i = 1; i < parts.length; i++)
 				{
 				    var idx = parts[i].indexOf(')');
-				    var url = trimString(parts[i].substring(0, idx));
+				    var url = Editor.trimCssUrl(parts[i].substring(0, idx));
 				    
 				    var l = document.createElement('link');
 					l.setAttribute('rel', 'preload');
@@ -1061,9 +1876,20 @@
 			}
 		}
 	};
-	
-	Editor.GOOGLE_FONTS =  'https://fonts.googleapis.com/css?family=';
-	
+			
+	/**
+	 * Strips leading and trailing quotes and spaces
+	 */
+    Editor.trimCssUrl = function(str)
+    {
+    	return str.replace(new RegExp("^[\\s\"']+", "g"), "").replace(new RegExp("[\\s\"']+$", "g"), "");
+    }
+    
+    /**
+     * Prefix for URLs that reference Google fonts.
+     */
+	Editor.GOOGLE_FONTS = 'https://fonts.googleapis.com/css?family=';
+    
 	/**
 	 * Alphabet for global unique IDs.
 	 */
@@ -1096,7 +1922,9 @@
 	Editor.prototype.timeout = 25000;
 	
 	/**
-	 * Zoomed mathjax output is causing problems in Safari.
+	 * Mathjax output ignores CSS transforms in Safari (lightbox and normal mode).
+	 * Check the following test case on page 2 before enabling this in production:
+	 * https://devhost.jgraph.com/git/drawio/etc/embed/sf-math-fo-clipping.html?dev=1
 	 */
 	Editor.prototype.useForeignObjectForMath = !mxClient.IS_SF;
 
@@ -1364,6 +2192,37 @@
 				}
 			}, 0);
 		};
+		
+		var font = (urlParams['math-font'] != null) ?
+			decodeURIComponent(urlParams['math-font']) :
+			'TeX';
+		
+		config = (config != null) ? config :
+		{
+			jax: ['input/TeX', 'input/MathML', 'input/AsciiMath'].concat(
+				[(urlParams['math-output'] == 'html') ?
+					'output/HTML-CSS' : 'output/SVG']),
+			extensions: ['tex2jax.js', 'mml2jax.js', 'asciimath2jax.js'],
+			TeX: {
+				extensions: ['AMSmath.js', 'AMSsymbols.js', 'noErrors.js', 'noUndefined.js']
+			},
+			'HTML-CSS': {
+				availableFonts: [font],
+				imageFont: null
+			},
+			SVG: {
+				font: font,
+				// Needed for client-side export to work
+				useFontCache: false
+			},
+			// Ignores math in in-place editor
+			tex2jax: {
+				ignoreClass: 'mxCellEditor'
+		  	},
+		  	asciimath2jax: {
+				ignoreClass: 'mxCellEditor'
+		  	}
+		};
 
 		// Disables global typesetting and messages on startup, adds queue for
 		// asynchronous rendering while MathJax is loading
@@ -1374,35 +2233,14 @@
 			messageStyle: 'none',
 			AuthorInit: function ()
 			{
-				// Specification recommends using SVG over HTML-CSS if browser is known
-				// Check if too inconsistent with image export and print output
-				MathJax.Hub.Config(config || {
-					jax: ['input/TeX', 'input/MathML', 'input/AsciiMath', 'output/SVG'],
-					extensions: ['tex2jax.js', 'mml2jax.js', 'asciimath2jax.js'],
-					TeX: {
-						extensions: ['AMSmath.js', 'AMSsymbols.js', 'noErrors.js', 'noUndefined.js']
-					},
-					// Needed for client-side export to work
-					SVG: {
-						font: (urlParams['math-font'] != null) ?
-							decodeURIComponent(urlParams['math-font']) :
-							'TeX',
-						useFontCache: false
-					},
-					// Ignores math in in-place editor
-					tex2jax: {
-						ignoreClass: 'mxCellEditor'
-				  	},
-				  	asciimath2jax: {
-						ignoreClass: 'mxCellEditor'
-				  	}
-				});
-				MathJax.Hub.Register.StartupHook('Begin', function()
-				{
-					for (var i = 0; i < Editor.mathJaxQueue.length; i++)
-					{
-						Editor.doMathJaxRender(Editor.mathJaxQueue[i]);
-					}
+				MathJax.Hub.Config(config);
+				
+				MathJax.Hub.Register.StartupHook('Begin', function()	
+				{	
+					for (var i = 0; i < Editor.mathJaxQueue.length; i++)	
+					{	
+						Editor.doMathJaxRender(Editor.mathJaxQueue[i]);	
+					}	
 				});
 		    }
 		};
@@ -1479,17 +2317,18 @@
 	};
 
 	/**
-	 * Returns true if the given URL is known to have CORS headers.
+	 * Returns true if the given URL is known to have CORS headers and is
+	 * allowed by CSP.
 	 */
 	Editor.prototype.isCorsEnabledForUrl = function(url)
 	{
-		//Disable proxy for electron since it doesn't exist (it is served locally) and it works with most of the sites
-		//The same with Chrome App, never use proxy
+		// Disables proxy for desktop and chrome app as it is served locally
 		if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
 		{
 			return true;
 		}
 		
+		// Blocked by CSP in production but allowed for hosted deployment
 		if (urlParams['cors'] != null && this.corsRegExp == null)
 		{
 			this.corsRegExp = new RegExp(decodeURIComponent(urlParams['cors']));
@@ -1498,14 +2337,9 @@
 		// No access-control-allow-origin for some Iconfinder images, add this when fixed:
 		// /^https?:\/\/[^\/]*\.iconfinder.com\//.test(url) ||
 		return (this.corsRegExp != null && this.corsRegExp.test(url)) ||
-			url.substring(0, 34) === 'https://raw.githubusercontent.com/' ||
-			url.substring(0, 23) === 'https://cdn.rawgit.com/' ||
-			url.substring(0, 19) === 'https://rawgit.com/' ||
-			/^https?:\/\/[^\/]*\.blob.core.windows.net\//.test(url) ||
-			/^https?:\/\/[^\/]*\.diagrams\.new\/proxy/.test(url) ||
-			/^https?:\/\/[^\/]*\.draw\.io\/proxy/.test(url) ||
-			/^https?:\/\/[^\/]*\.github\.io\//.test(url);
+			url.substring(0, 34) === 'https://raw.githubusercontent.com/';
 	};
+	
 	
 	/**
 	 * Converts all images in the SVG output to data URIs for immediate rendering
@@ -1866,6 +2700,70 @@
 			}
 		}
 	};
+
+	/**
+	 * Makes all relative font URLs absolute in the given font CSS.
+	 */
+    Editor.prototype.absoluteCssFonts = function(fontCss)
+    {
+    	var result = null;
+    	
+    	if (fontCss != null)
+    	{
+    		var parts = fontCss.split('url(');
+    		
+    		if (parts.length > 0)
+    		{
+    			result = [parts[0]];
+    		
+    			// Gets path for URL
+    			var path = window.location.pathname;
+    			var idx = (path != null) ? path.lastIndexOf('/') : -1;
+    			
+    			if (idx >= 0)
+    			{
+    				path = path.substring(0, idx + 1);
+    			}
+    			
+    			// Gets base tag from head
+    			var temp = document.getElementsByTagName('base');
+    			var base = null;
+    			
+    			if (temp != null && temp.length > 0)
+    			{
+    				base = temp[0].getAttribute('href');
+    			}
+    		
+    			for (var i = 1; i < parts.length; i++)
+    			{
+    				var idx = parts[i].indexOf(')');
+    				
+    				if (idx > 0)
+    				{
+	    				var url = Editor.trimCssUrl(parts[i].substring(0, idx));
+	    				
+	    				if (this.graph.isRelativeUrl(url))
+	    				{
+	                        url = (base != null) ? base + url : (window.location.protocol + '//' + window.location.hostname +
+	                        	((url.charAt(0) == '/') ? '' : path) + url);
+	                    }
+	    				
+	    				result.push('url("' + url + '"' + parts[i].substring(idx));
+    				}
+    				else
+    				{
+    					result.push(parts[i]);
+    				}
+    			}
+    		}
+    		else
+    		{
+    			result = [fontCss]
+    		}
+    	}
+    	
+    	return (result != null) ? result.join('') : null;
+	};
 	
 	/**
 	 * For the fonts in CSS to be applied when rendering images on canvas, the actual
@@ -1881,12 +2779,6 @@
         	this.cachedFonts = {};
         }
 
-        // Strips leading and trailing quotes and spaces
-        function trimString(str)
-        {
-            return str.replace(new RegExp("^[\\s\"']+", "g"), "").replace(new RegExp("[\\s\"']+$", "g"), "");
-        };
-        
         var finish = mxUtils.bind(this, function()
         {
             if (waiting == 0)
@@ -1898,7 +2790,7 @@
                 {
                     var idx = parts[j].indexOf(')');
                     result.push('url("');
-                    result.push(this.cachedFonts[trimString(parts[j].substring(0, idx))]);
+                    result.push(this.cachedFonts[Editor.trimCssUrl(parts[j].substring(0, idx))]);
                     result.push('"' + parts[j].substring(idx));
                 }
                 
@@ -1918,7 +2810,7 @@
                 
                 if (fmtIdx > 0)
                 {
-                    format = trimString(parts[i].substring(fmtIdx + 7, parts[i].indexOf(')', fmtIdx)));
+                    format = Editor.trimCssUrl(parts[i].substring(fmtIdx + 7, parts[i].indexOf(')', fmtIdx)));
                 }
 
                 (mxUtils.bind(this, function(url)
@@ -1977,7 +2869,7 @@
                             finish();
                         }), true, null, 'data:' + mime + ';charset=utf-8;base64,');
                     }
-                }))(trimString(parts[i].substring(0, idx)), format);
+                }))(Editor.trimCssUrl(parts[i].substring(0, idx)), format);
             }
             
             //In case all fonts are cached
@@ -2015,9 +2907,9 @@
      */
     Editor.prototype.embedExtFonts = function(callback)
     {
-    	var extFonts = this.graph.extFonts; 
+    	var extFonts = this.graph.getCustomFonts();
     	
-		if (extFonts != null && extFonts.length > 0)
+		if (extFonts.length > 0)
 		{
 			var styleCnt = '', waiting = 0;
 			
@@ -2038,7 +2930,7 @@
 			{
 				(mxUtils.bind(this, function(fontName, fontUrl)
 				{
-					if (fontUrl.indexOf(Editor.GOOGLE_FONTS) == 0)
+					if (Graph.isCssFontUrl(fontUrl))
 					{
 						if (this.cachedGoogleFonts[fontUrl] == null)
 						{
@@ -2066,9 +2958,8 @@
 					else
 					{
 						styleCnt += '@font-face {' +
-				            'font-family: "'+ fontName +'";' + 
-				            'src: url("'+ fontUrl +'");' + 
-				            '}';
+				            'font-family: "' + fontName + '";' + 
+				            'src: url("' + fontUrl + '")}';
 					}
 				}))(extFonts[i].name, extFonts[i].url);
 			}
@@ -2108,8 +2999,8 @@
 	 */
 	Editor.prototype.addFontCss = function(svgRoot, fontCss)
 	{
-		fontCss = (fontCss != null) ? fontCss : this.fontCss;
-		
+		fontCss = (fontCss != null) ? fontCss : this.absoluteCssFonts(this.fontCss);
+
 		// Creates defs element if not available
 		if (fontCss != null)
 		{
@@ -2156,7 +3047,8 @@
 	 *
 	 */
 	Editor.prototype.exportToCanvas = function(callback, width, imageCache, background, error, limitHeight,
-		ignoreSelection, scale, transparentBackground, addShadow, converter, graph, border, noCrop, grid)
+		ignoreSelection, scale, transparentBackground, addShadow, converter, graph, border, noCrop, grid,
+		keepTheme)
 	{
 		try
 		{
@@ -2180,11 +3072,11 @@
 			// Handles special case where background is null but transparent is false
 			if (bg == null && transparentBackground == false)
 			{
-				bg = '#ffffff';
+				bg = (keepTheme) ? this.graph.defaultPageBackgroundColor : '#ffffff';;
 			}
 			
-			this.convertImages(graph.getSvg(null, null, null, noCrop, null, ignoreSelection, null, null, null, addShadow),
-				mxUtils.bind(this, function(svgRoot)
+			this.convertImages(graph.getSvg(null, null, border, noCrop, null, ignoreSelection,
+				null, null, null, addShadow, null, keepTheme), mxUtils.bind(this, function(svgRoot)
 			{
 				try
 				{
@@ -2204,8 +3096,8 @@
 								scale = (!limitHeight) ? width / w : Math.min(1, Math.min((width * 3) / (h * 4), width / w));
 							}
 							
-							w = Math.ceil(scale * w) + 2 * border;
-							h = Math.ceil(scale * h) + 2 * border;
+							w = Math.ceil(scale * w);
+							h = Math.ceil(scale * h);
 							
 							canvas.setAttribute('width', w);
 					   		canvas.setAttribute('height', h);
@@ -2228,13 +3120,13 @@
 						   		{			   		
 									window.setTimeout(function()
 									{
-										ctx.drawImage(img, border / scale, border / scale);
+										ctx.drawImage(img, 0, 0);
 										callback(canvas);
 									}, 0);
 						   		}
 						   		else
 						   		{
-						   			ctx.drawImage(img, border / scale, border / scale);
+						   			ctx.drawImage(img, 0, 0);
 						   			callback(canvas);
 						   		}
 						    };
@@ -2252,8 +3144,8 @@
 				                var b = graph.getGraphBounds();
 								var tx = view.translate.x * curViewScale;
 								var ty = view.translate.y * curViewScale;
-								var x0 = tx + (b.x - tx) / curViewScale;
-								var y0 = ty + (b.y - ty) / curViewScale;
+								var x0 = tx + (b.x - tx) / curViewScale - border;
+								var y0 = ty + (b.y - ty) / curViewScale - border;
 								
 								var background = new Image();
 		
@@ -3078,6 +3970,14 @@
 	        {name: 'separatorColor', dispName: 'Separator Color', type: 'color', defVal: null},
 	    ];
 		
+		mxCellRenderer.defaultShapes['table'].prototype.customProperties = [
+			{name: 'rowLines', dispName: 'Row Lines', type: 'bool', defVal: true},
+			{name: 'columnLines', dispName: 'Column Lines', type: 'bool', defVal: true},
+			{name: 'fixedRows', dispName: 'Fixed Rows', type: 'bool', defVal: false},
+			{name: 'resizeLast', dispName: 'Resize Last Column', type: 'bool', defVal: false},
+			{name: 'resizeLastRow', dispName: 'Resize Last Row', type: 'bool', defVal: false}].
+			concat(mxCellRenderer.defaultShapes['swimlane'].prototype.customProperties);
+		
 		mxCellRenderer.defaultShapes['doubleEllipse'].prototype.customProperties = [
 	        {name: 'margin', dispName: 'Indent', type: 'float', min:0, defVal:4}
 	    ];
@@ -3183,9 +4083,10 @@
 			{fill: '#dae8fc', stroke: '#6c8ebf'}, {fill: '#d5e8d4', stroke: '#82b366'},
 			{fill: '#ffe6cc', stroke: '#d79b00'}, {fill: '#fff2cc', stroke: '#d6b656'},
 			{fill: '#f8cecc', stroke: '#b85450'}, {fill: '#e1d5e7', stroke: '#9673a6'}],
-			[{fill: '#60a917', stroke: '#2D7600', font: '#ffffff'}, {fill: '#008a00', stroke: '#005700', font: '#ffffff'},
-			{fill: '#1ba1e2', stroke: '#006EAF', font: '#ffffff'}, {fill: '#0050ef', stroke: '#001DBC', font: '#ffffff'},
-			{fill: '#6a00ff', stroke: '#3700CC', font: '#ffffff'}, {fill: '#aa00ff', stroke: '#7700CC', font: '#ffffff'},
+			[{fill: '', stroke: ''}, {fill: '#60a917', stroke: '#2D7600', font: '#ffffff'},
+			{fill: '#008a00', stroke: '#005700', font: '#ffffff'}, {fill: '#1ba1e2', stroke: '#006EAF', font: '#ffffff'},
+			{fill: '#0050ef', stroke: '#001DBC', font: '#ffffff'}, {fill: '#6a00ff', stroke: '#3700CC', font: '#ffffff'},
+			//{fill: '#aa00ff', stroke: '#7700CC', font: '#ffffff'},
 			{fill: '#d80073', stroke: '#A50040', font: '#ffffff'}, {fill: '#a20025', stroke: '#6F0000', font: '#ffffff'}],
 			[{fill: '#e51400', stroke: '#B20000', font: '#ffffff'}, {fill: '#fa6800', stroke: '#C73500', font: '#ffffff'},
 			{fill: '#f0a30a', stroke: '#BD7000', font: '#ffffff'}, {fill: '#e3c800', stroke: '#B09500', font: '#ffffff'},
@@ -3692,6 +4593,7 @@
 				else
 				{
 					td.innerHTML = pValue;
+					
 					mxEvent.addListener(td, 'click', mxUtils.bind(that, function()
 					{
 						var input = document.createElement('input');
@@ -3793,6 +4695,7 @@
 			div.style.position = 'relative';
 			div.style.padding = '0';
 			var grid = document.createElement('table');
+			grid.className = 'geProperties';
 			grid.style.whiteSpace = 'nowrap';
 			grid.style.width = '100%';
 			//create header row
@@ -3928,7 +4831,8 @@
 		 */
 		StyleFormatPanel.prototype.addStyles = function(div)
 		{
-			var graph = this.editorUi.editor.graph;
+			var ui = this.editorUi;
+			var graph = ui.editor.graph;
 			var picker = document.createElement('div');
 			picker.style.whiteSpace = 'nowrap';
 			picker.style.paddingLeft = '24px';
@@ -3941,10 +4845,58 @@
 			var stylenames = ['plain-gray', 'plain-blue', 'plain-green', 'plain-turquoise',
 				'plain-orange', 'plain-yellow', 'plain-red', 'plain-pink', 'plain-purple', 'gray',
 				'blue', 'green', 'turquoise', 'orange', 'yellow', 'red', 'pink', 'purple'];
-
-			function updateScheme(colorsets)
+			
+			// Maximum palettes to switch the switcher
+			var maxEntries = 10;
+						
+			// Selector
+			var switcher = document.createElement('div');
+			switcher.style.whiteSpace = 'nowrap';
+			switcher.style.position = 'relative';
+			switcher.style.textAlign = 'center';
+			
+			var dots = [];
+			
+			for (var i = 0; i < this.defaultColorSchemes.length; i++)
 			{
-				function addButton(colorset)
+				var dot = document.createElement('div');
+				dot.style.display = 'inline-block';
+				dot.style.width = '6px';
+				dot.style.height = '6px';
+				dot.style.marginLeft = '4px';
+				dot.style.marginRight = '3px';
+				dot.style.borderRadius = '3px';
+				dot.style.cursor = 'pointer';
+				dot.style.background = 'transparent';
+				dot.style.border = '1px solid #b5b6b7';
+				
+				(mxUtils.bind(this, function(index)
+				{
+					mxEvent.addListener(dot, 'click', mxUtils.bind(this, function()
+					{
+						setScheme(index);
+					}));
+				}))(i);
+				
+				dots.push(dot);
+				switcher.appendChild(dot);
+			}
+			
+			var setScheme = mxUtils.bind(this, function(index)
+			{
+				if (this.format.currentScheme != null)
+				{
+					dots[this.format.currentScheme].style.background = 'transparent';
+				}
+				
+				this.format.currentScheme = index;
+				updateScheme(this.defaultColorSchemes[this.format.currentScheme]);
+				dots[this.format.currentScheme].style.background = '#84d7ff';
+			});
+			
+			var updateScheme = mxUtils.bind(this, function(colorsets)
+			{
+				var addButton = mxUtils.bind(this, function(colorset)
 				{
 					var btn = mxUtils.button('', function(evt)
 					{
@@ -3962,34 +4914,41 @@
 									style = mxUtils.removeStylename(style, stylenames[j]);
 								}
 
-								var defaults = (graph.getModel().isVertex(cells[i])) ? graph.defaultVertexStyle : graph.defaultEdgeStyle;
+								var defaults = (graph.getModel().isVertex(cells[i])) ? ui.initialDefaultVertexStyle : ui.initialdefaultEdgeStyle;
 								
 								if (colorset != null)
 								{
 									style = mxUtils.setStyle(style, mxConstants.STYLE_GRADIENTCOLOR, colorset['gradient'] ||
 										mxUtils.getValue(defaults, mxConstants.STYLE_GRADIENTCOLOR, null));
 								
-									if (colorset['fill'] == '')
+									if (!mxEvent.isAltDown(evt))
 									{
-										style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR,null);
-									}
-									else
-									{
-										style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR, colorset['fill'] ||
-											mxUtils.getValue(defaults, mxConstants.STYLE_FILLCOLOR, null));
-									}
-									
-									if (colorset['stroke'] == '')
-									{
-										style = mxUtils.setStyle(style, mxConstants.STYLE_STROKECOLOR, null);
-									}
-									else
-									{
-										style = mxUtils.setStyle(style, mxConstants.STYLE_STROKECOLOR, colorset['stroke'] ||
-											mxUtils.getValue(defaults, mxConstants.STYLE_STROKECOLOR, null));
+										if (colorset['fill'] == '')
+										{
+											style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR,null);
+										}
+										else
+										{
+											style = mxUtils.setStyle(style, mxConstants.STYLE_FILLCOLOR, colorset['fill'] ||
+												mxUtils.getValue(defaults, mxConstants.STYLE_FILLCOLOR, null));
+										}
 									}
 									
-									if (graph.getModel().isVertex(cells[i]))
+									if (!mxEvent.isShiftDown(evt))
+									{
+										if (colorset['stroke'] == '')
+										{
+											style = mxUtils.setStyle(style, mxConstants.STYLE_STROKECOLOR, null);
+										}
+										else
+										{
+											style = mxUtils.setStyle(style, mxConstants.STYLE_STROKECOLOR, colorset['stroke'] ||
+												mxUtils.getValue(defaults, mxConstants.STYLE_STROKECOLOR, null));
+										}
+									}
+									
+									if (!mxEvent.isControlDown(evt) && (!mxClient.IS_MAC || !mxEvent.isMetaDown(evt)) &&
+										graph.getModel().isVertex(cells[i]))
 									{
 										style = mxUtils.setStyle(style, mxConstants.STYLE_FONTCOLOR, colorset['font'] ||
 											mxUtils.getValue(defaults, mxConstants.STYLE_FONTCOLOR, null));
@@ -4022,7 +4981,7 @@
 	
 					btn.className = 'geStyleButton';
 					btn.style.width = '36px';
-					btn.style.height = '30px';
+					btn.style.height = (this.defaultColorSchemes.length <= maxEntries) ? '24px' : '30px';
 					btn.style.margin = '0px 6px 6px 0px';
 					
 					if (colorset != null)
@@ -4047,12 +5006,12 @@
 						}
 						else if (colorset['fill'] == '')
 						{
-							btn.style.backgroundColor = mxUtils.getValue(graph.defaultVertexStyle,
+							btn.style.backgroundColor = mxUtils.getValue(ui.initialDefaultVertexStyle,
 								mxConstants.STYLE_FILLCOLOR, (uiTheme == 'dark') ?'#2a2a2a' : '#ffffff');
 						}
 						else
 						{
-							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(graph.defaultVertexStyle,
+							btn.style.backgroundColor = colorset['fill'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
 								mxConstants.STYLE_FILLCOLOR, (uiTheme == 'dark') ?'#2a2a2a' : '#ffffff');
 						}
 						
@@ -4062,12 +5021,12 @@
 						}
 						else if (colorset['stroke'] == '')
 						{
-							btn.style.border = '1px solid ' + mxUtils.getValue(graph.defaultVertexStyle, 
+							btn.style.border = '1px solid ' + mxUtils.getValue(ui.initialDefaultVertexStyle, 
 								mxConstants.STYLE_STROKECOLOR, (uiTheme != 'dark') ?'#2a2a2a' : '#ffffff');
 						}
 						else
 						{
-							btn.style.border = '1px solid ' + (colorset['stroke'] || mxUtils.getValue(graph.defaultVertexStyle,
+							btn.style.border = '1px solid ' + (colorset['stroke'] || mxUtils.getValue(ui.initialDefaultVertexStyle,
 									mxConstants.STYLE_STROKECOLOR, (uiTheme != 'dark') ?'#2a2a2a' : '#ffffff'));
 						}
 					}
@@ -4081,7 +5040,7 @@
 					}
 					
 					picker.appendChild(btn);
-				};
+				});
 				
 				picker.innerHTML = '';
 				
@@ -4094,25 +5053,30 @@
 					
 					addButton(colorsets[i]);
 				}
-			};
+			});
 
-			if (this.editorUi.currentScheme == null)
+			if (this.format.currentScheme == null)
 			{
-				this.editorUi.currentScheme = 0;
+				setScheme((uiTheme == 'dark') ? 1 : 0);
 			}
+			else
+			{
+				setScheme(this.format.currentScheme);
+			}
+			
+			var bottom = (this.defaultColorSchemes.length <= maxEntries) ? 28 : 8;
 
 			var left = document.createElement('div');
-			left.style.cssText = 'position:absolute;left:10px;top:8px;bottom:8px;width:20px;margin:4px;opacity:0.5;' +
+			left.style.cssText = 'position:absolute;left:10px;top:8px;bottom:' + bottom + 'px;width:20px;margin:4px;opacity:0.5;' +
 				'background-repeat:no-repeat;background-position:center center;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQBAMAAADQT4M0AAAAIVBMVEUAAAB2dnZ4eHh3d3d1dXVxcXF2dnZ2dnZ2dnZxcXF2dnYmb3w1AAAACnRSTlMAfCTkhhvb7cQSPH2JPgAAADRJREFUCNdjwACMAmBKaiGYs2oJmLPKAZ3DabU8AMRTXpUKopislqFyVzCAuUZgikkBZjoAcMYLnp53P/UAAAAASUVORK5CYII=);';
 			
 			mxEvent.addListener(left, 'click', mxUtils.bind(this, function()
 			{
-				this.editorUi.currentScheme = mxUtils.mod(this.editorUi.currentScheme - 1, this.defaultColorSchemes.length);
-				updateScheme(this.defaultColorSchemes[this.editorUi.currentScheme]);
+				setScheme(mxUtils.mod(this.format.currentScheme - 1, this.defaultColorSchemes.length));
 			}));
 			
 			var right = document.createElement('div');
-			right.style.cssText = 'position:absolute;left:202px;top:8px;bottom:8px;width:20px;margin:4px;opacity:0.5;' +
+			right.style.cssText = 'position:absolute;left:202px;top:8px;bottom:' + bottom + 'px;width:20px;margin:4px;opacity:0.5;' +
 				'background-repeat:no-repeat;background-position:center center;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQBAMAAADQT4M0AAAAIVBMVEUAAAB2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnYBuwCcAAAACnRSTlMAfCTkhhvb7cQSPH2JPgAAADZJREFUCNdjQAOMAmBKaiGY8loF5rKswsZlrVo8AUiFrTICcbIWK8A5DF1gDoMymMPApIAwHwCS0Qx/U7qCBQAAAABJRU5ErkJggg==);';
 
 			if (this.defaultColorSchemes.length > 1)
@@ -4123,8 +5087,7 @@
 			
 			mxEvent.addListener(right, 'click', mxUtils.bind(this, function()
 			{
-				this.editorUi.currentScheme = mxUtils.mod(this.editorUi.currentScheme + 1, this.defaultColorSchemes.length);
-				updateScheme(this.defaultColorSchemes[this.editorUi.currentScheme]);
+				setScheme(mxUtils.mod(this.format.currentScheme + 1, this.defaultColorSchemes.length));
 			}));
 			
 			// Hover state
@@ -4143,7 +5106,12 @@
 			addHoverState(left);
 			addHoverState(right);
 			
-			updateScheme(this.defaultColorSchemes[this.editorUi.currentScheme]);
+			updateScheme(this.defaultColorSchemes[this.format.currentScheme]);
+			
+			if (this.defaultColorSchemes.length <= maxEntries)
+			{
+				div.appendChild(switcher);
+			}
 			
 			return div;
 		};
@@ -4220,6 +5188,169 @@
 			return div;
 		};
 	}
+	
+	/**
+	 * Lookup table for mapping from font URL and name to elements in the DOM.
+	 */
+	Graph.customFontElements = {};
+		
+	/**
+	 * Lookup table for recent custom fonts.
+	 */
+	Graph.recentCustomFonts = {};
+
+	/**
+	 * Returns true if the given font URL references a Google font.
+	 */
+	Graph.isGoogleFontUrl = function(url)
+	{
+		return url.substring(0, Editor.GOOGLE_FONTS.length) == Editor.GOOGLE_FONTS;
+	};
+
+	/**
+	 * Returns true if the given font URL is a CSS file.
+	 */
+	Graph.isCssFontUrl = function(url)
+	{
+		return Graph.isGoogleFontUrl(url);
+	};
+
+	/**
+	 * Creates the DOM node for the custom font.
+	 */
+	Graph.createFontElement = function(name, url)
+	{
+		var elt = null;
+
+		if (Graph.isCssFontUrl(url))
+		{
+			elt = document.createElement('link');
+			elt.setAttribute('rel', 'stylesheet');
+			elt.setAttribute('type', 'text/css');
+			elt.setAttribute('charset', 'UTF-8');
+			elt.setAttribute('href', url);
+		}
+		else
+		{
+			elt = document.createElement('style');
+			mxUtils.write(elt, '@font-face {\n' +	
+				'font-family: "' + name + '";\n' + 	
+				'src: url("' + url + '");\n}');
+		}
+		
+		return elt;
+	};
+	
+	/**
+	 * Adds a font to the document.
+	 */
+	Graph.addFont = function(name, url)
+	{
+		if (name != null && name.length > 0 && url != null && url.length > 0)
+		{
+			var key = name.toLowerCase();
+			
+			// Blocks UI font from being overwritten
+			if (key != 'helvetica' && name != 'arial' && key != 'sans-serif')
+			{
+				var entry = Graph.customFontElements[key];
+				
+				// Replaces element if URL has changed
+				if (entry != null && entry.url != url)
+				{
+					entry.elt.parentNode.removeChild(entry.elt);
+					entry = null;
+				}
+				
+				if (entry == null)
+				{
+					var realUrl = url;
+					
+					// Fixes possible mixed content by using proxy
+					if (url.substring(0, 5) == 'http:')
+					{
+						realUrl = PROXY_URL + '?url=' + encodeURIComponent(url);
+					}
+
+					entry = {name: name, url: url, elt: Graph.createFontElement(name, realUrl)};
+					Graph.customFontElements[key] = entry;
+					Graph.recentCustomFonts[key] = entry;
+					var head = document.getElementsByTagName('head')[0];
+					
+					if (head != null)
+					{
+						head.appendChild(entry.elt);
+					}
+				}
+			}
+		}
+		
+		return name;
+	};
+
+	/**
+	 * Returns the URL for the given font name if it exists in the document.
+	 * Otherwise it returns the given URL.
+	 */
+	Graph.getFontUrl = function(name, url)
+	{
+		var font = Graph.customFontElements[name.toLowerCase()];
+		
+		if (font != null)
+		{
+			url = font.url;
+		}
+		
+		return url;
+	};
+	
+	/**
+	 * Processes the fonts in the given element and its descendants.
+	 */
+	Graph.processFontAttributes = function(elt)
+	{
+		var elts = elt.getElementsByTagName('*');
+		
+		for (var i = 0; i < elts.length; i++)
+		{
+			var url = elts[i].getAttribute('data-font-src');
+			
+			if (url != null)
+			{
+				var name = (elts[i].nodeName == 'FONT') ?
+					elts[i].getAttribute('face') :
+					elts[i].style.fontFamily;
+	
+				if (name != null)
+				{
+					Graph.addFont(name, url);
+				}
+			}
+		}		
+	};
+	
+	/**
+	 * Processes the font in the given cell style.
+	 */
+	Graph.processFontStyle = function(style)
+	{
+		if (style != null)
+		{
+			var url = mxUtils.getValue(style, 'fontSource', null);
+	
+			if (url != null)
+			{
+				var name = mxUtils.getValue(style, mxConstants.STYLE_FONTFAMILY, null);
+				
+				if (name != null)
+				{
+					Graph.addFont(name, decodeURIComponent(url));
+				}
+			}
+		}
+		
+		return style;
+	};
 
 	/**
 	 * Changes the default stylename so that it matches the old named style
@@ -4366,7 +5497,6 @@
 				if (style['childLayout'] == 'rack')
 				{
 					var rackLayout = new mxStackLayout(this.graph, false);
-					
 					var unitSize = 20;
 					
 					if (style['rackUnitSize'] != null)
@@ -4378,13 +5508,14 @@
 						rackLayout.gridSize = (typeof mxRackContainer !== 'undefined') ? mxRackContainer.unitSize : unitSize;
 					}
 					
-					rackLayout.fill = true;
 					rackLayout.marginLeft = style['marginLeft'] || 0;
 					rackLayout.marginRight = style['marginRight'] || 0;
 					rackLayout.marginTop = style['marginTop'] || 0;
 					rackLayout.marginBottom = style['marginBottom'] || 0;
 					rackLayout.allowGaps = style['allowGaps'] || 0;
+					rackLayout.horizontal = mxUtils.getValue(style, 'horizontalRack', '0') == '1';
 					rackLayout.resizeParent = false;
+					rackLayout.fill = true;
 					
 					return rackLayout;
 				}
@@ -4418,6 +5549,100 @@
 		this.updateGlobalUrlVariables();
 	};
 
+	/**
+	 * Adds support for custom fonts in cell styles.
+	 */
+	var graphPostProcessCellStyle = Graph.prototype.postProcessCellStyle;
+	Graph.prototype.postProcessCellStyle = function(style)
+	{
+		return Graph.processFontStyle(graphPostProcessCellStyle.apply(this, arguments));
+	};
+
+	/**
+	 * Handles custom fonts in labels.
+	 */
+	var mxSvgCanvas2DUpdateTextNodes = mxSvgCanvas2D.prototype.updateTextNodes;
+	mxSvgCanvas2D.prototype.updateTextNodes = function(x, y, w, h, align, valign, wrap, overflow, clip, rotation, g)
+	{
+		mxSvgCanvas2DUpdateTextNodes.apply(this, arguments);
+		Graph.processFontAttributes(g);
+	};
+		
+	/**
+	 * Handles custom fonts in labels.
+	 */
+	var mxTextRedraw = mxText.prototype.redraw;
+	mxText.prototype.redraw = function()
+	{
+		mxTextRedraw.apply(this, arguments);
+		
+		// Handles label rendered without foreign object
+		if (this.node != null && this.node.nodeName == 'DIV')
+		{
+			Graph.processFontAttributes(this.node);
+		}
+	};
+
+	/**
+	 * Returns all custom fonts (old and new).
+	 */
+	Graph.prototype.getCustomFonts = function()
+	{
+		var fonts = this.extFonts;
+		
+		if (fonts != null)
+		{
+			fonts = fonts.slice();
+		}
+		else
+		{
+			fonts = [];
+		}
+		
+		for (var key in Graph.customFontElements)
+		{
+			var font = Graph.customFontElements[key];
+			fonts.push({name: font.name, url: font.url});
+		}
+		
+		return fonts;
+	};
+	
+	/**
+	 * Assigns the given custom font to the selected text.
+	 */
+	Graph.prototype.setFont = function(name, url)
+	{
+		// Adds the font element to the document
+		Graph.addFont(name, url);
+		
+		// Only valid known fonts are allowed as parameters so we set
+		// the real font name and the data-source-face in the element
+		// which is used as the face attribute when editing stops
+		// KNOWN: Undo for the DOM change is not working
+		document.execCommand('fontname', false, name);
+
+		// Finds element with new font name and checks its data-font-src attribute
+		if (url != null)
+		{
+			var fonts = this.cellEditor.textarea.getElementsByTagName('font');
+			
+			// Enforces consistent font naming
+			url = Graph.getFontUrl(name, url);
+			
+			for (var i = 0; i < fonts.length; i++)
+			{
+				if (fonts[i].getAttribute('face') == name)
+				{
+					if (fonts[i].getAttribute('data-font-src') != url)
+					{
+						fonts[i].setAttribute('data-font-src', url);
+					}
+				}
+			}
+		}
+	};
+	
 	/**
 	 * Disables fast zoom with shadow in lightbox for Safari
 	 * to work around blank output on retina screen.
@@ -4516,11 +5741,11 @@
 	var graphGetSvg = Graph.prototype.getSvg;
 	
 	Graph.prototype.getSvg = function(background, scale, border, nocrop, crisp,
-			ignoreSelection, showText, imgExport, linkTarget, hasShadow, incExtFonts)
+		ignoreSelection, showText, imgExport, linkTarget, hasShadow, incExtFonts, keepTheme)
 	{
 		var temp = null;
 		
-		if (this.themes != null && this.defaultThemeName == 'darkTheme')
+		if (!keepTheme && this.themes != null && this.defaultThemeName == 'darkTheme')
 		{
 			temp = this.stylesheet;
 			this.stylesheet = this.getDefaultStylesheet();
@@ -4530,9 +5755,10 @@
 		}
 		
 		var result = graphGetSvg.apply(this, arguments);
+		var extFonts = this.getCustomFonts();
 		
-		// Adds extrnal fonts
-		if (incExtFonts && this.extFonts != null && this.extFonts.length > 0)
+		// Adds external fonts
+		if (incExtFonts && extFonts.length > 0)
 		{
 			var svgDoc = result.ownerDocument;
 			var style = (svgDoc.createElementNS != null) ?
@@ -4542,20 +5768,19 @@
 			var prefix = '';
 			var postfix = '';
 			    	
-			for (var i = 0; i < this.extFonts.length; i++)
+			for (var i = 0; i < extFonts.length; i++)
 			{
-				var fontName = this.extFonts[i].name, fontUrl = this.extFonts[i].url;
+				var fontName = extFonts[i].name, fontUrl = extFonts[i].url;
 				
-				if (fontUrl.indexOf(Editor.GOOGLE_FONTS) == 0)
+				if (Graph.isCssFontUrl(fontUrl))
 				{
 					prefix += '@import url(' + fontUrl + ');\n';
 				}
 				else
 				{
 					postfix += '@font-face {\n' +
-			            'font-family: "'+ fontName +'";\n' + 
-			            'src: url("'+ fontUrl +'");\n' + 
-			            '}\n';
+			            'font-family: "' + fontName + '";\n' + 
+			            'src: url("' + fontUrl + '");\n}\n';
 				}				
 			}
 			
@@ -4583,10 +5808,6 @@
 		
 		if (this.mathEnabled)
 		{
-			var graph = this;
-			var origin = graph.container.getBoundingClientRect();
-			var y0 = graph.container.scrollTop - origin.y;
-			var x0 = graph.container.scrollLeft - origin.x;
 			var drawText = imgExport.drawText;
 			
 			// Replaces input with rendered markup
@@ -4789,6 +6010,11 @@
 						cells = this.getCellsForAction(action.scroll);
 					}
 					
+					if (action.viewbox != null)
+					{
+						this.fitWindow(action.viewbox, action.viewbox.border);
+					}
+					
 					if (cells.length > 0)
 					{
 						this.scrollCellToVisible(cells[0]);
@@ -4813,7 +6039,7 @@
 		if (this.isHtmlLabel(cell))
 		{
 			var temp = document.createElement('div');
-			temp.innerHTML = this.getLabel(cell);
+			temp.innerHTML = this.sanitizeHtml(this.getLabel(cell));
 			var links = temp.getElementsByTagName('a');
 			var changed = false;
 			
@@ -5296,6 +6522,7 @@
 	mxStencilRegistry.libraries['bpmn'] = [SHAPES_PATH + '/bpmn/mxBpmnShape2.js', STENCIL_PATH + '/bpmn.xml'];
 	mxStencilRegistry.libraries['c4'] = [SHAPES_PATH + '/mxC4.js'];
 	mxStencilRegistry.libraries['cisco19'] = [SHAPES_PATH + '/mxCisco19.js', STENCIL_PATH + '/cisco19.xml'];
+	mxStencilRegistry.libraries['cisco_safe'] = [SHAPES_PATH + '/mxCiscoSafe.js', STENCIL_PATH + '/cisco_safe/architecture.xml', STENCIL_PATH + '/cisco_safe/business_icons.xml', STENCIL_PATH + '/cisco_safe/capability.xml', STENCIL_PATH + '/cisco_safe/design.xml', STENCIL_PATH + '/cisco_safe/iot_things_icons.xml', STENCIL_PATH + '/cisco_safe/people_places_things_icons.xml', STENCIL_PATH + '/cisco_safe/security_icons.xml', STENCIL_PATH + '/cisco_safe/technology_icons.xml', STENCIL_PATH + '/cisco_safe/threat.xml'];
 	mxStencilRegistry.libraries['dfd'] = [SHAPES_PATH + '/mxDFD.js'];
 	mxStencilRegistry.libraries['er'] = [SHAPES_PATH + '/er/mxER.js'];
 	mxStencilRegistry.libraries['kubernetes'] = [SHAPES_PATH + '/mxKubernetes.js', STENCIL_PATH + '/kubernetes.xml'];
@@ -5484,11 +6711,16 @@
 		}
 		
 		pagesFromInput.setAttribute('max', pageCount);
-		pagesToInput.setAttribute('max', pageCount);		
+		pagesToInput.setAttribute('max', pageCount);
 		
-		if (pageCount > 1)
+		if (!editorUi.isPagesEnabled())
+		{
+			pagesRadio.checked = true;
+		}
+		else if (pageCount > 1)
 		{
 			div.appendChild(pagesSection);
+			pagesRadio.checked = true;
 		}
 		
 		// Adjust to ...
@@ -5740,6 +6972,16 @@
 					{
 						writeHead.apply(this, arguments);
 						
+						// Fixes font weight for PDF export in Chrome
+						if (mxClient.IS_GC)
+						{
+							doc.writeln('<style type="text/css">');
+							doc.writeln('@media print {');
+							doc.writeln('span.MathJax_SVG svg { shape-rendering: crispEdges; }');
+							doc.writeln('}');
+							doc.writeln('</style>');
+						}
+
 						if (editorUi.editor.fontCss != null)
 						{
 							doc.writeln('<style type="text/css">');
@@ -5747,26 +6989,26 @@
 							doc.writeln('</style>');
 						}
 						
-						if (thisGraph.extFonts != null)
+						var extFonts = thisGraph.getCustomFonts();
+						
+						for (var i = 0; i < extFonts.length; i++)
 						{
-							for (var i = 0; i < thisGraph.extFonts.length; i++)
+							var fontName = extFonts[i].name;
+							var fontUrl = extFonts[i].url;
+							
+							if (Graph.isCssFontUrl(fontUrl))
 							{
-								var fontName = thisGraph.extFonts[i].name;
-								var fontUrl = thisGraph.extFonts[i].url;
-								
-								if (fontUrl.indexOf(Editor.GOOGLE_FONTS) == 0)
-								{
-							   		doc.writeln('<link rel="stylesheet" href="' + fontUrl + '" charset="UTF-8" type="text/css">');
-								}
-								else
-								{
-							   		doc.writeln('<style type="text/css">');
-							   		doc.writeln('@font-face {\n' +
-								            '\tfont-family: "'+ fontName +'";\n' + 
-								            '\tsrc: url("'+ fontUrl +'");\n' + 
-								            '}');
-							   		doc.writeln('</style>');
-								}
+						   		doc.writeln('<link rel="stylesheet" href="' +
+						   			mxUtils.htmlEntities(fontUrl) +
+						   			'" charset="UTF-8" type="text/css">');
+							}
+							else
+							{
+						   		doc.writeln('<style type="text/css">');
+						   		doc.writeln('@font-face {\n' +
+						   			'font-family: "' + mxUtils.htmlEntities(fontName) + '";\n' + 
+						   			'src: url("' + mxUtils.htmlEntities(fontUrl) + '");\n}');
+						   		doc.writeln('</style>');
 							}
 						}
 					};
@@ -5781,9 +7023,7 @@
 							var prev = mxClient.NO_FO;
 							mxClient.NO_FO = (this.graph.mathEnabled && !editorUi.editor.useForeignObjectForMath) ?
 								true : editorUi.editor.originalNoForeignObject;
-							
 							var result = printPreviewRenderPage.apply(this, arguments);
-
 							mxClient.NO_FO = prev;
 							
 							if (this.graph.mathEnabled)
@@ -5832,24 +7072,27 @@
 					pv.autoOrigin = autoOrigin;
 					pv.appendGraph(thisGraph, scale, x0, y0, forcePageBreaks, true);
 					
-					if (thisGraph.extFonts != null && pv.wnd != null)
+					var extFonts = thisGraph.getCustomFonts();
+					
+					if (pv.wnd != null)
 					{
-						for (var i = 0; i < thisGraph.extFonts.length; i++)
+						for (var i = 0; i < extFonts.length; i++)
 						{
-							var fontName = thisGraph.extFonts[i].name;
-							var fontUrl = thisGraph.extFonts[i].url;
+							var fontName = extFonts[i].name;
+							var fontUrl = extFonts[i].url;
 							
-							if (fontUrl.indexOf(Editor.GOOGLE_FONTS) == 0)
+							if (Graph.isCssFontUrl(fontUrl))
 							{
-						   		pv.wnd.document.writeln('<link rel="stylesheet" href="' + fontUrl + '" charset="UTF-8" type="text/css">');
+						   		pv.wnd.document.writeln('<link rel="stylesheet" href="' +
+						   			mxUtils.htmlEntities(fontUrl) +
+						   			'" charset="UTF-8" type="text/css">');
 							}
 							else
 							{
 						   		pv.wnd.document.writeln('<style type="text/css">');
 						   		pv.wnd.document.writeln('@font-face {\n' +
-							            '\tfont-family: "'+ fontName +'";\n' + 
-							            '\tsrc: url("'+ fontUrl +'");\n' + 
-							            '}');
+						   			'font-family: "' + mxUtils.htmlEntities(fontName) + '";\n' + 
+						   			'src: url("' + mxUtils.htmlEntities(fontUrl) + '");\n}');
 						   		pv.wnd.document.writeln('</style>');
 							}
 						}
@@ -5873,7 +7116,16 @@
 			var pagesTo = pagesToInput.value;
 			var ignorePages = !allPagesRadio.checked;
 			var pv = null;
-						
+			
+			if (EditorUi.isElectronApp)
+			{
+				PrintDialog.electronPrint(editorUi, allPagesRadio.checked, pagesFrom, pagesTo,  fitRadio.checked,
+					sheetsAcrossInput.value, sheetsDownInput.value, parseInt(zoomInput.value) / 100,
+					parseInt(pageScaleInput.value) / 100, accessor.get());
+				
+				return;
+			}
+			
 			if (ignorePages)
 			{
 				ignorePages = pagesFrom == currentPage && pagesTo == currentPage;
@@ -5978,39 +7230,16 @@
 				if (pv.mathEnabled)
 				{
 					var doc = pv.wnd.document;
-			
-					doc.writeln('<script type="text/x-mathjax-config">');
-					doc.writeln('MathJax.Hub.Config({');
-					doc.writeln('showMathMenu: false,');
-					doc.writeln('messageStyle: "none",');
-					doc.writeln('jax: ["input/TeX", "input/MathML", "input/AsciiMath", "output/SVG"],');
-					doc.writeln('extensions: ["tex2jax.js", "mml2jax.js", "asciimath2jax.js"],');
-					doc.writeln('TeX: {');
-					doc.writeln('extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]');
-					doc.writeln('},');
-					doc.writeln('SVG: {');
-					doc.writeln('font: "' + ((urlParams['math-font'] != null) ?
-						decodeURIComponent(urlParams['math-font']) :
-						'TeX') + '"');
-					doc.writeln('},');
-					doc.writeln('tex2jax: {');
-					doc.writeln('ignoreClass: "geDisableMathJax"');
-				  	doc.writeln('},');
-				  	doc.writeln('asciimath2jax: {');
-					doc.writeln('ignoreClass: "geDisableMathJax"');
-				  	doc.writeln('}');
-					doc.writeln('});');
 					
-					// Adds asynchronous printing when MathJax finished rendering
+					// Adds asynchronous printing when MathJax finishes rendering
+					// via global variable that is checked in math-print.js to
+					// avoid generating unsafe-inline script or adding SHA to CSP
 					if (print)
 					{
-						doc.writeln('MathJax.Hub.Queue(function () {');
-						doc.writeln('window.print();');
-						doc.writeln('});');
+						pv.wnd.IMMEDIATE_PRINT = true;
 					}
-					
-					doc.writeln('</script>');
-					doc.writeln('<script type="text/javascript" src="' + DRAW_MATH_URL + '/MathJax.js"></script>');
+
+					doc.writeln('<script type="text/javascript" src="' + DRAWIO_BASE_URL + '/js/math-print.js"></script>');
 				}
 				
 				pv.closeDocument();
@@ -6216,3 +7445,19 @@
 
 	mxCodecRegistry.register(codec);
 })();
+
+// Extends codec for ChangeGridColor
+(function()
+{
+	var codec = new mxObjectCodec(new ChangeGridColor(),  ['ui']);
+	  
+	codec.beforeDecode = function(dec, node, obj)
+	{
+		obj.ui = dec.ui;
+		  
+		return node;
+	};
+
+	mxCodecRegistry.register(codec);
+})();
+

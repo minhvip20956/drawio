@@ -526,6 +526,23 @@ DriveClient.prototype.createAuthWin = function(url)
  */
 DriveClient.prototype.authorize = function(immediate, success, error, remember, popup)
 {
+	var req = new mxXmlRequest(this.redirectUri + '?getState=1', null, 'GET');
+	
+	req.send(mxUtils.bind(this, function(req)
+	{
+		if (req.getStatus() >= 200 && req.getStatus() <= 299)
+		{
+			this.authorizeStep2(req.getText(), immediate, success, error, remember, popup);
+		}
+		else if (error != null)
+		{
+			error(req);
+		}
+	}), error);
+};
+
+DriveClient.prototype.authorizeStep2 = function(state, immediate, success, error, remember, popup)
+{
 	var updateAuthInfo = mxUtils.bind(this, function (newAuthInfo, remember, forceUserUpdate)
 	{
 		this.token = newAuthInfo.access_token;
@@ -610,7 +627,8 @@ DriveClient.prototype.authorize = function(immediate, success, error, remember, 
 			if (immediate) //Note, we checked refresh token is not null above
 			{
 				//state is used to identify which app/domain is used
-				var req = new mxXmlRequest(this.redirectUri + '?state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname) + '&refresh_token=' + authInfo.refresh_token, null, 'GET');
+				var req = new mxXmlRequest(this.redirectUri + '?state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname + '&ver=2&token=' + state)
+						+ '&refresh_token=' + authInfo.refresh_token, null, 'GET');
 				
 				req.send(mxUtils.bind(this, function(req)
 				{
@@ -643,7 +661,7 @@ DriveClient.prototype.authorize = function(immediate, success, error, remember, 
 						'&response_type=code&include_granted_scopes=true' +
 						(remember? '&access_type=offline&prompt=consent%20select_account' : '') + //Ask for consent again to get a new refresh token
 						'&scope=' + encodeURIComponent(this.scopes.join(' ')) +
-						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname); //To identify which app/domain is used
+						'&state=' + encodeURIComponent('cId=' + this.clientId + '&domain=' + window.location.hostname + '&ver=2&token=' + state); //To identify which app/domain is used
 				
 				if (popup == null)
 				{
@@ -1237,22 +1255,23 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 			{
 				EditorUi.logError(e.message, null, null, e);
 				
-				EditorUi.sendReport('Critical error in DriveClient.saveFile ' +
-					new Date().toISOString() + ':' +
-					'\n\nUserAgent=' + navigator.userAgent +
-					'\nAppVersion=' + navigator.appVersion +
-					'\nAppName=' + navigator.appName +
-					'\nPlatform=' + navigator.platform +
-					'\nFile=' + file.desc.id + '.' + file.desc.headRevisionId +
-					'\nMime=' + file.desc.mimeType +
-					'\nUser=' + ((this.user != null) ? this.user.id : 'nouser') +
-					 	((file.sync != null) ? '-client_' + file.sync.clientId : '-nosync') +
-					'\nSaveLevel=' + file.saveLevel +
-					'\nSaveAsPng=' + (this.ui.useCanvasForExport && /(\.png)$/i.test(file.getTitle())) +
-					'\nRetryCount=' + retryCount +
-					'\nError=' + e +
-					'\nMessage=' + e.message +
-					'\n\nStack:\n' + e.stack);
+//				EditorUi.sendReport('Critical error in DriveClient.saveFile ' +
+//					new Date().toISOString() + ':' +
+//					'\n\nUserAgent=' + navigator.userAgent +
+//					'\nAppVersion=' + navigator.appVersion +
+//					'\nAppName=' + navigator.appName +
+//					'\nPlatform=' + navigator.platform +
+//					'\nFile=' + file.desc.id + '.' + file.desc.headRevisionId +
+//					'\nMime=' + file.desc.mimeType +
+//					'\nSize=' + file.getSize() +
+//					'\nUser=' + ((this.user != null) ? this.user.id : 'nouser') +
+//					 	((file.sync != null) ? '-client_' + file.sync.clientId : '-nosync') +
+//					'\nSaveLevel=' + file.saveLevel +
+//					'\nSaveAsPng=' + (this.ui.useCanvasForExport && /(\.png)$/i.test(file.getTitle())) +
+//					'\nRetryCount=' + retryCount +
+//					'\nError=' + e +
+//					'\nMessage=' + e.message +
+//					'\n\nStack:\n' + e.stack);
 			}
 			catch (e)
 			{
@@ -1505,14 +1524,14 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 									var acceptResponse = true;
 									var timeoutThread = null;
 									
-									// Allow for re-auth flow with 3x timeout
+									// Allow for re-auth flow with 5x timeout
 									try
 									{
 										timeoutThread = window.setTimeout(mxUtils.bind(this, function()
 										{
 											acceptResponse = false;
-											error({code: App.ERROR_TIMEOUT, message: mxResources.get('timeout')});
-										}), 3 * this.ui.timeout);
+											error({code: App.ERROR_TIMEOUT});
+										}), 5 * this.ui.timeout);
 									}
 									catch (e)
 									{
@@ -1638,7 +1657,7 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 							{
 								file.saveLevel = 9;
 								
-								if (realOverwrite)
+								if (realOverwrite || etag == null)
 								{
 									doExecuteSave(realOverwrite);
 								}
@@ -1653,7 +1672,7 @@ DriveClient.prototype.saveFile = function(file, revision, success, errFn, noChec
 										timeoutThread = window.setTimeout(mxUtils.bind(this, function()
 										{
 											acceptResponse = false;
-											error({code: App.ERROR_TIMEOUT, message: mxResources.get('timeout')});
+											error({code: App.ERROR_TIMEOUT});
 										}), 3 * this.ui.timeout);
 									}
 									catch (e)
@@ -1932,9 +1951,10 @@ DriveClient.prototype.createUploadRequest = function(id, metadata, data, revisio
 		'headers': headers,
 		'params': delim + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) + delim +
 			'Content-Type: ' + ctype + '\r\n' + 'Content-Transfer-Encoding: base64\r\n' + '\r\n' +
-			((data != null) ? (binary) ? data : Base64.encode(data) : '') + close
+			((data != null) ? ((binary) ? data : ((window.btoa && !mxClient.IS_IE && !mxClient.IS_IE11) ?
+				Graph.base64EncodeUnicode(data) : Base64.encode(data))) : '') + close
 	}
-	
+
 	if (!revision)
 	{
 		reqObj.fullUrl += '&newRevision=false';

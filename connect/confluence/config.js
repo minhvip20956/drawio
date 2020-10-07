@@ -1,3 +1,50 @@
+//Logs uncaught errors
+window.onerror = function(message, url, linenumber, colno, err)
+{
+	message = 'Confluence Cloud Config: ' + ((message != null) ? message : '');
+	
+	AC.logError(message, url, linenumber, colno, err);
+};
+
+
+function restrictContentToAdmins(contentId)
+{
+	AP.user.getCurrentUser(function(user) 
+	{
+		AP.request({
+			type: 'PUT',
+			url: '/rest/api/content/' + contentId + '/restriction',
+			contentType: 'application/json;charset=UTF-8',
+			data: JSON.stringify([{
+	            "operation": "update",
+	            "restrictions": {
+	            	"user": [
+	                    {
+	                        "type": "known",
+	                        "accountId": user.atlassianAccountId
+	                    }
+	                ],
+	            	"group": [
+	                        {
+	                            "type": "group",
+	                            "name": "administrators"
+	                        },
+	                        {
+	                            "type": "group",
+	                            "name": "site-admins"
+	                        }
+	                    ]
+	                }
+				}
+	        ]),
+	        error: function(err)
+	        {
+	        	AC.logError('Confluence Cloud Config: Error in setting restrictions ' + err.responseText);
+	        }
+		});
+	});
+};
+
 var collectAllPages = function(callback, error)
 {
 	var start = 0, limit = 200;
@@ -136,19 +183,18 @@ var exportPageIds = function(exportTxt)
 		{
 			var a = document.createElement('a');
 			
-			// Workaround for mxXmlRequest.simulate no longer working in Safari/PaleMoon
-			// if this is used (ie PNG export broken after XML export in Safari/PaleMoon).
-			var useDownload = !(navigator.userAgent.indexOf('AppleWebKit/') >= 0 &&
-			  		navigator.userAgent.indexOf('Chrome/') < 0 &&
-			  		navigator.userAgent.indexOf('Edge/') < 0) && navigator.userAgent.indexOf("PaleMoon/") < 0 &&
+			// Workaround for mxXmlRequest.simulate no longer working in PaleMoon
+			// if this is used (ie PNG export broken after XML export in PaleMoon)
+			// and for "WebKitBlobResource error 1" for all browsers on iOS.
+			var useDownload = (navigator.userAgent == null ||
+				navigator.userAgent.indexOf("PaleMoon/") < 0) &&
 				typeof a.download !== 'undefined';
 			
 			// Workaround for Chromium 65 cross-domain anchor download issue
-			var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
-			
-			if (raw)
+			if (mxClient.IS_GC && navigator.userAgent != null)
 			{
-				var vers = parseInt(raw[2], 10);
+				var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./)
+				var vers = raw ? parseInt(raw[2], 10) : false;
 				useDownload = vers == 65 ? false : useDownload;
 			}
 			
@@ -163,7 +209,7 @@ var exportPageIds = function(exportTxt)
 					window.setTimeout(function()
 					{
 						URL.revokeObjectURL(a.href);
-					}, 0);
+					}, 20000);
 
 					a.click();
 					a.parentNode.removeChild(a);
@@ -512,9 +558,12 @@ var fixMissingComponents = function(existingPages)
             }),
             success: function (resp) 
             {
+            	var pageId = JSON.parse(resp).id;
+            	restrictContentToAdmins(pageId);
+            	
             	if (callback)
         		{
-            		callback(JSON.parse(resp).id);
+            		callback(pageId);
         		}
             	else
             	{
@@ -1596,6 +1645,7 @@ script.onload = function()
 			        	for (var i = 0; i < resp.results.length; i++)
 		        		{
 			        		var item = resp.results[i];
+			        		restrictContentToAdmins(item.id);
 			        		configSpaceFoundComponents[item.title] = item.id;
 		        		}
 			        	
@@ -1622,7 +1672,11 @@ script.onload = function()
 		
 		indexBtn.click(function()
 		{
-			DrawIoDiagramsIndexer($('#operationLog'));
+			$('#DRIbusyIcon').show();
+			DrawIoDiagramsIndexer($('#operationLog'), function()
+			{
+				$('#DRIbusyIcon').hide();
+			});
 		});
 		
 		var exportBtn = $('#exportBtn');

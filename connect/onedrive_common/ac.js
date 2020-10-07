@@ -4,7 +4,9 @@ if (typeof AC === 'undefined')
 	AC = {};
 }
 
-switch(window.location.hostname)
+AC.host = window.location.host;
+
+switch(AC.host)
 {
 	case 'test.draw.io':
 		AC.clientId = '2e598409-107f-4b59-89ca-d7723c8e00a4';
@@ -19,8 +21,8 @@ switch(window.location.hostname)
 		AC.clientId = '45c10911-200f-4e27-a666-9e9fca147395';
 }
 
-AC.redirectUri = 'https://' + window.location.hostname + '/microsoft';
-AC.pickerRedirectUri = 'https://' + window.location.hostname + '/onedrive3.html';
+AC.redirectUri = window.location.protocol + '//' + AC.host + '/microsoft';
+AC.pickerRedirectUri = window.location.protocol + '//' + AC.host + '/onedrive3.html';
 AC.defEndpoint = 'api.onedrive.com'; //This is the default endpoint for personal accounts
 AC.scopes = 'user.read files.read.all offline_access files.readwrite.all sites.read.all'; //Files.ReadWrite.All is needed for personal accounts createLink (embedded) and also for editing diagrams on draw.io
 AC.isLocalStorage = typeof(Storage) != 'undefined';
@@ -38,7 +40,7 @@ else
 	CAC.applyCAC(AC);
 }
 
-AC.authOneDrive = function(success, error)
+AC.authOneDrive = function(success, error, direct)
 {
 	AC.reqQueue.push({success: success, error: error});
 	
@@ -51,7 +53,7 @@ AC.authOneDrive = function(success, error)
 	
 	if (window.onOneDriveCallback == null)
 	{
-		var auth = function()
+		var authStep2 = function(state)
 		{
 			var acceptAuthResponse = true;
 			
@@ -59,7 +61,7 @@ AC.authOneDrive = function(success, error)
 				'?client_id=' + AC.clientId + '&response_type=code' +
 				'&redirect_uri=' + encodeURIComponent(AC.redirectUri) +
 				'&scope=' + encodeURIComponent(AC.scopes) +
-				'&state=' + encodeURIComponent('cId=' + AC.clientId + '&domain=' + window.location.hostname); //To identify which app/domain is used
+				'&state=' + encodeURIComponent('cId=' + AC.clientId + '&domain=' + AC.host + '&ver=2&token=' + state); //To identify which app/domain is used
 
 			var width = 525,
 				height = 525,
@@ -138,29 +140,59 @@ AC.authOneDrive = function(success, error)
 			}
 		};
 		
-		var authDialog = document.createElement('div');
-		var btn = document.createElement('button');
-		btn.innerHTML = 'Authorize draw.io to access OneDrive';
-		btn.className = 'aui-button aui-button-primary';
-		authDialog.appendChild(btn);
-		
-		function adjustAuthBtn()
+		var auth = function()
 		{
-			var w = window.innerWidth, h = window.innerHeight;
-			authDialog.style.cssText = 'position: absolute; top: 0px; left: 0px; width: '+ w +'px; height: '+ h +'px; background: #fff;opacity: 0.85;z-index: 999;';
-			btn.style.cssText = 'position: absolute; width: 320px; height: 50px; top: '+ (h/2 - 25) +'px; left: '+ (w/2 - 160) +'px;opacity: 1;';
-		}
-
-		btn.addEventListener('click', function(evt) 
+			var req = new XMLHttpRequest();
+			req.open('GET', AC.redirectUri + '?getState=1');
+			
+			req.onreadystatechange = function()
+			{
+				if (this.readyState == 4)
+				{
+					if (this.status >= 200 && this.status <= 299)
+					{
+						authStep2(req.responseText);
+					}
+					else
+					{
+						error(this);
+					}
+				}
+			};
+			
+			req.send();
+		};
+		
+		if (direct)
 		{
 			auth();
-			//Remove the event handler since the user already used the button
-			window.removeEventListener("resize", adjustAuthBtn);
-		});
-		
-		window.addEventListener('resize', adjustAuthBtn);
-		adjustAuthBtn();
-		document.body.appendChild(authDialog);
+		}
+		else
+		{
+			var authDialog = document.createElement('div');
+			var btn = document.createElement('button');
+			btn.innerHTML = 'Authorize draw.io to access OneDrive';
+			btn.className = 'aui-button aui-button-primary';
+			authDialog.appendChild(btn);
+			
+			function adjustAuthBtn()
+			{
+				var w = window.innerWidth, h = window.innerHeight;
+				authDialog.style.cssText = 'position: absolute; top: 0px; left: 0px; width: '+ w +'px; height: '+ h +'px; background: #fff;opacity: 0.85;z-index: 9999;';
+				btn.style.cssText = 'position: absolute; width: 320px; height: 50px; top: '+ (h/2 - 25) +'px; left: '+ (w/2 - 160) +'px;opacity: 1;';
+			}
+	
+			btn.addEventListener('click', function(evt) 
+			{
+				auth();
+				//Remove the event handler since the user already used the button
+				window.removeEventListener("resize", adjustAuthBtn);
+			});
+			
+			window.addEventListener('resize', adjustAuthBtn);
+			adjustAuthBtn();
+			document.body.appendChild(authDialog);
+		}
 	}
 	else
 	{
@@ -169,7 +201,7 @@ AC.authOneDrive = function(success, error)
 };
 
 //JSON request with auth
-AC.doAuthRequest = function(url, method, params, success, error)
+AC.doAuthRequest = function(url, method, params, success, error, failIfNotAuth)
 {
 	if (AC.token == null)
 	{
@@ -177,12 +209,18 @@ AC.doAuthRequest = function(url, method, params, success, error)
 		
 		if (token == null)
 		{
-			AC.authOneDrive(function()
+			if (failIfNotAuth)
 			{
-				//Retry request after authentication
-				AC.doAuthRequest(url, method, params, success, error);
-			}, error);
-			
+				error({authNeeded: true});
+			}
+			else
+			{
+				AC.authOneDrive(function()
+				{
+					//Retry request after authentication
+					AC.doAuthRequest(url, method, params, success, error);
+				}, error);
+			}
 			return;
 		}
 		else
@@ -211,9 +249,51 @@ AC.doAuthRequest = function(url, method, params, success, error)
 				
 				if (authInfo != null)
 				{
+					function doRefreshToken(state)
+					{
+						var req2 = new XMLHttpRequest();
+						req2.open('GET', AC.redirectUri + '?refresh_token=' + authInfo.refresh_token +
+								'&state=' + encodeURIComponent('cId=' + AC.clientId + '&domain=' + AC.host + '&ver=2&token=' + state)); //To identify which app/domain is used
+						
+						req2.onreadystatechange = function()
+						{
+							if (this.readyState == 4)
+							{
+								if (this.status >= 200 && this.status <= 299)
+								{
+									var newAuthInfo = JSON.parse(req2.responseText);
+									AC.token = newAuthInfo.access_token;
+									//Update existing authInfo and save it
+									authInfo.access_token = newAuthInfo.access_token;
+									authInfo.refresh_token = newAuthInfo.refresh_token;
+									authInfo.expiresOn = Date.now() + newAuthInfo.expires_in * 1000;
+									AC.setPersistentAuth(authInfo);
+									//Retry request with refreshed token
+									AC.doAuthRequest(url, method, params, success, error);
+								}
+								else // (Unauthorized) [e.g, invalid refresh token] (sometimes, the server returns errors other than 401 (e.g. 500))
+								{
+									if (failIfNotAuth)
+									{
+										error({authNeeded: true});
+									}
+									else
+									{
+										AC.authOneDrive(function()
+										{
+											//Retry request after authentication
+											AC.doAuthRequest(url, method, params, success, error);
+										}, error);
+									}
+								}
+							}
+						}
+						
+						req2.send();
+					};
+					
 					var req2 = new XMLHttpRequest();
-					req2.open('GET', AC.redirectUri + '?refresh_token=' + authInfo.refresh_token +
-							'&state=' + encodeURIComponent('cId=' + AC.clientId + '&domain=' + window.location.hostname)); //To identify which app/domain is used
+					req2.open('GET', AC.redirectUri + '?getState=1');
 					
 					req2.onreadystatechange = function()
 					{
@@ -221,36 +301,31 @@ AC.doAuthRequest = function(url, method, params, success, error)
 						{
 							if (this.status >= 200 && this.status <= 299)
 							{
-								var newAuthInfo = JSON.parse(req2.responseText);
-								AC.token = newAuthInfo.access_token;
-								//Update existing authInfo and save it
-								authInfo.access_token = newAuthInfo.access_token;
-								authInfo.refresh_token = newAuthInfo.refresh_token;
-								authInfo.expiresOn = Date.now() + newAuthInfo.expires_in * 1000;
-								AC.setPersistentAuth(authInfo);
-								//Retry request with refreshed token
-								AC.doAuthRequest(url, method, params, success, error);
+								doRefreshToken(req2.responseText);
 							}
-							else // (Unauthorized) [e.g, invalid refresh token] (sometimes, the server returns errors other than 401 (e.g. 500))
+							else
 							{
-								AC.authOneDrive(function()
-								{
-									//Retry request after authentication
-									AC.doAuthRequest(url, method, params, success, error);
-								}, error);
+								error(this);
 							}
 						}
-					}
+					};
 					
 					req2.send();
 				}
 				else
 				{
-					AC.authOneDrive(function()
+					if (failIfNotAuth)
 					{
-						//Retry request after authentication
-						AC.doAuthRequest(url, method, params, success, error);
-					}, error);
+						error({authNeeded: true});
+					}
+					else
+					{
+						AC.authOneDrive(function()
+						{
+							//Retry request after authentication
+							AC.doAuthRequest(url, method, params, success, error);
+						}, error);
+					}
 				}
 			}
 			else
@@ -357,7 +432,7 @@ AC.getFileInfo = function(id, driveId, success, error)
 			 'GET', null, success, error);
 };
 
-AC.confirmODAuth = function(success, error)
+AC.confirmODAuth = function(success, error, failIfNotAuth)
 {
 	AC.doAuthRequest('/me/drive/root',
 			 'GET', null, function(resp)
@@ -379,7 +454,7 @@ AC.confirmODAuth = function(success, error)
 			 	AC.setPersistentAuth(authInfo);
 			 	
 				success(resp);
-			 }, error);
+			 }, error, failIfNotAuth);
 };
 
 //This function depends on having GraphViewer loaded

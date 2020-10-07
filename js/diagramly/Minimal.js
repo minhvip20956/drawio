@@ -499,19 +499,23 @@ EditorUi.initMinimalTheme = function()
 				}
 			}
 
-			button = document.createElement('a');
-			mxUtils.write(button, mxResources.get('exit'));
-			button.setAttribute('title', mxResources.get('exit'));
-			button.className = 'geMenuItem';
-			button.style.marginLeft = '6px';
-			button.style.padding = '6px';
-			
-			mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
+			if (urlParams['noExitBtn'] != '1')
 			{
-				this.actions.get('exit').funct();
-			}));
+				button = document.createElement('a');
+				mxUtils.write(button, mxResources.get('exit'));
+				button.setAttribute('title', mxResources.get('exit'));
+				button.className = 'geMenuItem';
+				button.style.marginLeft = '6px';
+				button.style.padding = '6px';
+				
+				mxEvent.addListener(button, 'click', mxUtils.bind(this, function()
+				{
+					this.actions.get('exit').funct();
+				}));
+				
+				div.appendChild(button);
+			}
 			
-			div.appendChild(button);
 			this.buttonContainer.appendChild(div);
 			this.buttonContainer.style.top = '6px';
 		}
@@ -576,12 +580,12 @@ EditorUi.initMinimalTheme = function()
     };
     
     // Overridden to toggle window instead
-    EditorUi.prototype.toggleFormatPanel = function(forceHide)
+    EditorUi.prototype.toggleFormatPanel = function(visible)
     {
         if (this.formatWindow != null)
         {
-        	this.formatWindow.window.setVisible((forceHide) ?
-               false : !this.formatWindow.window.isVisible());
+        	this.formatWindow.window.setVisible((visible != null) ?
+        		visible : !this.formatWindow.window.isVisible());
         }
         else
         {
@@ -729,11 +733,18 @@ EditorUi.initMinimalTheme = function()
         {
 	        ui.actions.put('plantUml', new Action(mxResources.get('plantUml') + '...', function()
 	        {
-	            var dlg = new ParseDialog(ui, 'Insert from Text', 'plantUml');
+	            var dlg = new ParseDialog(ui, mxResources.get('plantUml') + '...', 'plantUml');
 	            ui.showDialog(dlg.container, 620, 420, true, false);
 	            dlg.init();
 	        }));
         }
+        
+    	ui.actions.put('mermaid', new Action(mxResources.get('mermaid') + '...', function()
+        {
+            var dlg = new ParseDialog(ui, mxResources.get('mermaid') + '...', 'mermaid');
+            ui.showDialog(dlg.container, 620, 420, true, false);
+            dlg.init();
+        }));
 
         this.put('diagram', new Menu(mxUtils.bind(this, function(menu, parent)
         {
@@ -743,14 +754,8 @@ EditorUi.initMinimalTheme = function()
 			
 			if (mxClient.IS_CHROMEAPP || EditorUi.isElectronApp)
 			{
-				ui.menus.addMenuItems(menu, ['new', 'open', '-'], parent);
-				
-				if (EditorUi.isElectronApp)
-				{
-					ui.menus.addMenuItems(menu, ['synchronize', '-'], parent);
-				}
-				
-				ui.menus.addMenuItems(menu, ['save', 'saveAs', '-'], parent);
+				ui.menus.addMenuItems(menu, ['new', 'open', '-', 'synchronize',
+					'-', 'save', 'saveAs', '-'], parent);
 			}
 			else if (urlParams['embed'] == '1')
 			{
@@ -892,6 +897,11 @@ EditorUi.initMinimalTheme = function()
         })));
 
         var langMenu = this.get('language');
+        
+        this.put('table', new Menu(mxUtils.bind(this, function(menu, parent)
+		{
+			ui.menus.addInsertTableCellItem(menu, parent);
+		})));
 
         // Extras menu is labelled preferences but keeps ID for extensions
         this.put('extras', new Menu(mxUtils.bind(this, function(menu, parent)
@@ -929,7 +939,7 @@ EditorUi.initMinimalTheme = function()
         
         this.put('insertAdvanced', new Menu(mxUtils.bind(this, function(menu, parent)
         {
-            ui.menus.addMenuItems(menu, ['importText', 'plantUml', '-', 'formatSql', 'importCsv', '-', 'createShape', 'editDiagram'], parent);
+            ui.menus.addMenuItems(menu, ['importText', 'plantUml', 'mermaid', '-', 'formatSql', 'importCsv', '-', 'createShape', 'editDiagram'], parent);
         })));
         
         (mxUtils.bind(this, function()
@@ -940,6 +950,7 @@ EditorUi.initMinimalTheme = function()
 			insertMenu.funct = function(menu, parent)
 			{
 				insertMenuFunct.apply(this, arguments);
+				ui.menus.addSubmenu('table', menu, parent);
 				menu.addSeparator(parent);
 				ui.menus.addMenuItems(menu, ['-', 'toggleShapes'], parent);
 			};

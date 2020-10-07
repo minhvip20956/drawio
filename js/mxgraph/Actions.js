@@ -203,46 +203,64 @@ Actions.prototype.init = function()
 	{
 		// Cancels interactive operations
 		graph.escape();
-		var cells = graph.getDeletableCells(graph.getSelectionCells());
+		var select = graph.deleteCells(graph.getDeletableCells(graph.getSelectionCells()), includeEdges);
 		
-		if (cells != null && cells.length > 0)
+		if (select != null)
 		{
-			var parents = (graph.selectParentAfterDelete) ? graph.model.getParents(cells) : null;
-			graph.removeCells(cells, includeEdges);
-			
-			// Selects parents for easier editing of groups
-			if (parents != null)
-			{
-				var select = [];
-				
-				for (var i = 0; i < parents.length; i++)
-				{
-					if (graph.model.contains(parents[i]) &&
-						(graph.model.isVertex(parents[i]) ||
-						graph.model.isEdge(parents[i])))
-					{
-						select.push(parents[i]);
-					}
-				}
-				
-				graph.setSelectionCells(select);
-			}
+			graph.setSelectionCells(select);
 		}
 	};
 	
 	this.addAction('delete', function(evt)
 	{
-		deleteCells(evt != null && mxEvent.isShiftDown(evt));
+		deleteCells(evt != null && mxEvent.isControlDown(evt));
 	}, null, null, 'Delete');
 	this.addAction('deleteAll', function()
 	{
-		deleteCells(true);
+		if (!graph.isSelectionEmpty())
+		{
+			graph.getModel().beginUpdate();
+			try
+			{
+				var cells = graph.getSelectionCells();
+				
+				for (var i = 0; i < cells.length; i++)
+				{
+					graph.cellLabelChanged(cells[i], '');
+				}
+			}
+			finally
+			{
+				graph.getModel().endUpdate();
+			}
+		}
+	});
+	this.addAction('deleteLabels', function()
+	{
+		if (!graph.isSelectionEmpty())
+		{
+			graph.getModel().beginUpdate();
+			try
+			{
+				var cells = graph.getSelectionCells();
+				
+				for (var i = 0; i < cells.length; i++)
+				{
+					graph.cellLabelChanged(cells[i], '');
+				}
+			}
+			finally
+			{
+				graph.getModel().endUpdate();
+			}
+		}
 	}, null, null, Editor.ctrlKey + '+Delete');
 	this.addAction('duplicate', function()
 	{
 		try
 		{
 			graph.setSelectionCells(graph.duplicateCells());
+			graph.scrollCellToVisible(graph.getSelectionCell());
 		}
 		catch (e)
 		{
@@ -302,13 +320,39 @@ Actions.prototype.init = function()
 	}, null, null, Editor.ctrlKey + '+G');
 	this.addAction('ungroup', function()
 	{
-		if (graph.getSelectionCount() == 1 && graph.getModel().getChildCount(graph.getSelectionCell()) == 0)
+		if (graph.isEnabled() && !graph.isSelectionEmpty())
 		{
-			graph.setCellStyles('container', '0');
-		}
-		else
-		{
-			graph.setSelectionCells(graph.ungroupCells());
+			var cells = graph.getSelectionCells();
+			
+	        graph.model.beginUpdate();
+			try
+			{
+				var temp = graph.ungroupCells();
+				
+				// Unsets container flag for remaining cells
+				if (cells != null)
+				{
+					for (var i = 0; i < cells.length; i++)
+			    	{
+						if (graph.model.contains(cells[i]))
+						{
+							if (graph.model.getChildCount(cells[i]) == 0 &&
+								graph.model.isVertex(cells[i]))
+							{
+								graph.setCellStyles('container', '0', [cells[i]]);
+							}
+							
+							temp.push(cells[i]);
+						}
+			    	}
+				}
+		    }
+			finally
+			{
+				graph.model.endUpdate();
+			}
+	
+			graph.setSelectionCells(temp);
 		}
 	}, null, null, Editor.ctrlKey + '+Shift+U');
 	this.addAction('removeFromGroup', function() { graph.removeCellsFromParent(); });
@@ -327,8 +371,6 @@ Actions.prototype.init = function()
 	}, null, null, Editor.ctrlKey + '+M');
 	this.addAction('editTooltip...', function()
 	{
-		var graph = ui.editor.graph;
-		
 		if (graph.isEnabled() && !graph.isSelectionEmpty())
 		{
 			var cell = graph.getSelectionCell();
@@ -363,8 +405,6 @@ Actions.prototype.init = function()
 	});
 	this.addAction('editLink...', function()
 	{
-		var graph = ui.editor.graph;
-		
 		if (graph.isEnabled() && !graph.isSelectionEmpty())
 		{
 			var cell = graph.getSelectionCell();
@@ -410,13 +450,16 @@ Actions.prototype.init = function()
 						}
 					}
 					
-					var pt = graph.getFreeInsertPoint();
-            		var linkCell = new mxCell(title, new mxGeometry(pt.x, pt.y, 100, 40),
+            		var linkCell = new mxCell(title, new mxGeometry(0, 0, 100, 40),
 	            	    	'fontColor=#0000EE;fontStyle=4;rounded=1;overflow=hidden;' + ((icon != null) ?
 	            	    	'shape=label;imageWidth=16;imageHeight=16;spacingLeft=26;align=left;image=' + icon :
 	            	    	'spacing=10;'));
             	    linkCell.vertex = true;
 
+            	    var pt = graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry([linkCell], true));
+					linkCell.geometry.x = pt.x;
+            	    linkCell.geometry.y = pt.y;
+            	    
             	    graph.setLinkForCell(linkCell, link);
             	    graph.cellSizeUpdated(linkCell, true);
 
@@ -439,8 +482,6 @@ Actions.prototype.init = function()
 	})).isEnabled = isGraphEnabled;
 	this.addAction('link...', mxUtils.bind(this, function()
 	{
-		var graph = ui.editor.graph;
-		
 		if (graph.isEnabled())
 		{
 			if (graph.cellEditor.isContentEditing())
@@ -571,7 +612,7 @@ Actions.prototype.init = function()
 				    		
 				    		// Removes HTML tags
 			    			var temp = document.createElement('div');
-			    			temp.innerHTML = label;
+			    			temp.innerHTML = graph.sanitizeHtml(label);
 			    			label = mxUtils.extractTextWithWhitespace(temp.childNodes);
 			    			
 							graph.cellLabelChanged(state.cell, label);
@@ -669,25 +710,29 @@ Actions.prototype.init = function()
 	}, null, null, Editor.ctrlKey + ' - (Numpad) / Alt+Mousewheel');
 	this.addAction('fitWindow', function()
 	{
-		var bounds = (graph.isSelectionEmpty()) ? graph.getGraphBounds() : graph.getBoundingBox(graph.getSelectionCells());
+		var bounds = (graph.isSelectionEmpty()) ? graph.getGraphBounds() :
+			graph.getBoundingBox(graph.getSelectionCells())
 		var t = graph.view.translate;
 		var s = graph.view.scale;
-		bounds.width /= s;
-		bounds.height /= s;
+		
 		bounds.x = bounds.x / s - t.x;
 		bounds.y = bounds.y / s - t.y;
-		
-		var cw = graph.container.clientWidth - 10;
-		var ch = graph.container.clientHeight - 10;
-		var scale = Math.floor(20 * Math.min(cw / bounds.width, ch / bounds.height)) / 20;
-		graph.zoomTo(scale);
+		bounds.width /= s;
+		bounds.height /= s;
 
-		if (mxUtils.hasScrollbars(graph.container))
+		if (graph.backgroundImage != null)
 		{
-			graph.container.scrollTop = (bounds.y + t.y) * scale -
-				Math.max((ch - bounds.height * scale) / 2 + 5, 0);
-			graph.container.scrollLeft = (bounds.x + t.x) * scale -
-				Math.max((cw - bounds.width * scale) / 2 + 5, 0);
+			bounds.add(new mxRectangle(0, 0, graph.backgroundImage.width, graph.backgroundImage.height));
+		}
+		
+		if (bounds.width == 0 || bounds.height == 0)
+		{
+			graph.zoomTo(1);
+			ui.resetScrollbars();
+		}
+		else
+		{
+			graph.fitWindow(bounds);
 		}
 	}, null, null, Editor.ctrlKey + '+Shift+H');
 	this.addAction('fitPage', mxUtils.bind(this, function()
@@ -810,6 +855,7 @@ Actions.prototype.init = function()
 	action = this.addAction('tooltips', function()
 	{
 		graph.tooltipHandler.setEnabled(!graph.tooltipHandler.isEnabled());
+		ui.fireEvent(new mxEventObject('tooltipsEnabledChanged'));
 	});
 	action.setToggleAction(true);
 	action.setSelectedCallback(function() { return graph.tooltipHandler.isEnabled(); });
@@ -1284,11 +1330,14 @@ Actions.prototype.init = function()
 			        		// Inserts new cell if no cell is selected
 			    			if (cells.length == 0)
 			    			{
-			    				var pt = graph.getFreeInsertPoint();
-			    				cells = [graph.insertVertex(graph.getDefaultParent(), null, '', pt.x, pt.y, w, h,
-			    						'shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;')];
+			    				cells = [graph.insertVertex(graph.getDefaultParent(), null, '', 0, 0, w, h,
+			    					'shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;')];
+			    				var pt = graph.getCenterInsertPoint(graph.getBoundingBoxFromGeometry(cells, true));
+								cells[0].geometry.x = pt.x;
+			            	    cells[0].geometry.y = pt.y;
+			            	    
 			    				select = cells;
-		            	    		graph.fireEvent(new mxEventObject('cellsInserted', 'cells', select));
+		            	    	graph.fireEvent(new mxEventObject('cellsInserted', 'cells', select));
 			    			}
 			    			
 			        		graph.setCellStyles(mxConstants.STYLE_IMAGE, (newValue.length > 0) ? newValue : null, cells);

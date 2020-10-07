@@ -92,7 +92,7 @@ CAC.htmlEntities = function(s, newline)
 	return s;
 };
 
-CAC.getPageInfo = function(callback)
+CAC.getCurPageId = function(callback)
 {
 	AP.navigator.getLocation(function (data)
     {
@@ -112,7 +112,7 @@ CAC.getPageInfo = function(callback)
 
 CAC.uploadCachedMxFile = function(fileContent, filename, success, error)
 {
-	CAC.uploadAttachment(fileContent, filename, 'application/vnd.jgraph.mxfile', 'Diagram Viewer Cached file', success, error)
+	CAC.uploadAttachment(fileContent, filename, 'application/vnd.jgraph.mxfile.cached', 'Diagram Viewer Cached file', success, error)
 };
 
 CAC.delOldCachedFiles = function(pageId, filename, timestamp)
@@ -133,7 +133,7 @@ CAC.delOldCachedFiles = function(pageId, filename, timestamp)
 
 CAC.uploadAttachment = function(fileContent, filename, fileType, comment, success, error)
 {
-	CAC.getPageInfo(function(pageId, draftPage)
+	CAC.getCurPageId(function(pageId, draftPage)
 	{
 		var attFile = new Blob([fileContent], {type: fileType});
 		attFile.name = filename;
@@ -244,3 +244,20 @@ CAC.getJiraAttList = function(issueId, success, error)
 };
 
 CAC.noop = function(){};
+
+CAC.importCsv = function(csv, callback, error)
+{
+	//Adjust some functions such that it can be instanciated without UI
+	EditorUi.prototype.createUi = function(){};
+	EditorUi.prototype.addTrees = function(){};
+	EditorUi.prototype.updateActionStates = function(){};
+	EditorUi.prototype.onBeforeUnload = function(){}; //Prevent unload message
+	var editorUi = new EditorUi();
+	editorUi.handleError = error;
+	
+	editorUi.importCsv(csv, function()
+	{
+		var csvModel = editorUi.editor.getGraphXml();
+		callback(csvModel, mxUtils.getXml(csvModel));
+	});
+};

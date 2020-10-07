@@ -335,7 +335,15 @@ GitHubClient.prototype.executeRequest = function(req, success, error, ignoreNotF
 					error({code: req.getStatus(), message: this.getErrorMessage(req, mxResources.get('error') + ' ' + req.getStatus())});
 				}
 			}
-		}), error);
+		}), mxUtils.bind(this, function(err)
+		{
+			window.clearTimeout(timeoutThread);
+				    	
+			if (acceptResponse)
+			{
+				error(err);
+			}
+		}));
 	});
 
 	var fn = mxUtils.bind(this, function(failOnAuth)
@@ -820,13 +828,13 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 		dlg.okButton.parentNode.removeChild(dlg.okButton);
 	}
 	
-	var createLink = mxUtils.bind(this, function(label, fn, padding)
+	var createLink = mxUtils.bind(this, function(label, exec, padding)
 	{
 		var link = document.createElement('a');
-		link.setAttribute('href', 'javascript:void(0);');
 		link.setAttribute('title', label);
+		link.style.cursor = 'pointer';
 		mxUtils.write(link,  label);
-		mxEvent.addListener(link, 'click', fn);
+		mxEvent.addListener(link, 'click', exec);
 		
 		if (padding != null)
 		{
@@ -936,7 +944,7 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 		
 		nextPageDiv = document.createElement('a');
 		nextPageDiv.style.display = 'block';
-		nextPageDiv.setAttribute('href', 'javascript:void(0);');
+		nextPageDiv.style.cursor = 'pointer';
 		mxUtils.write(nextPageDiv, mxResources.get('more') + '...');
 		
 		var nextPage = mxUtils.bind(this, function()
@@ -990,7 +998,8 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 							if (showFolders == (file.type == 'dir'))
 							{
 								var temp = listItem.cloneNode();
-								temp.style.backgroundColor = (gray) ? '#eeeeee' : '';
+								temp.style.backgroundColor = (gray) ?
+									((uiTheme == 'dark') ? '#000000' : '#eeeeee') : '';
 								gray = !gray;
 
 								var typeImg = document.createElement('img');
@@ -1074,7 +1083,7 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 		
 		nextPageDiv = document.createElement('a');
 		nextPageDiv.style.display = 'block';
-		nextPageDiv.setAttribute('href', 'javascript:void(0);');
+		nextPageDiv.style.cursor = 'pointer';
 		mxUtils.write(nextPageDiv, mxResources.get('more') + '...');
 		
 		var nextPage = mxUtils.bind(this, function()
@@ -1112,7 +1121,8 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 					(mxUtils.bind(this, function(branch, idx)
 					{
 						var temp = listItem.cloneNode();
-						temp.style.backgroundColor = (idx % 2 == 0) ? '#eeeeee' : '';
+						temp.style.backgroundColor = (idx % 2 == 0) ?
+							((uiTheme == 'dark') ? '#000000' : '#eeeeee') : '';
 						
 						temp.appendChild(createLink(branch.name, mxUtils.bind(this, function()
 						{
@@ -1168,7 +1178,7 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 		
 		nextPageDiv = document.createElement('a');
 		nextPageDiv.style.display = 'block';
-		nextPageDiv.setAttribute('href', 'javascript:void(0);');
+		nextPageDiv.style.cursor = 'pointer';
 		mxUtils.write(nextPageDiv, mxResources.get('more') + '...');
 		
 		var nextPage = mxUtils.bind(this, function()
@@ -1253,7 +1263,8 @@ GitHubClient.prototype.showGitHubDialog = function(showFiles, fn)
 					(mxUtils.bind(this, function(repository, idx)
 					{
 						var temp = listItem.cloneNode();
-						temp.style.backgroundColor = (idx % 2 == 0) ? '#eeeeee' : '';
+						temp.style.backgroundColor = (idx % 2 == 0) ?
+							((uiTheme == 'dark') ? '#000000' : '#eeeeee') : '';
 						
 						temp.appendChild(createLink(repository.full_name, mxUtils.bind(this, function()
 						{

@@ -6,6 +6,76 @@
  * is used for development mode where the JS is in separate
  * files and the mxClient.js loads other files.
  */
+if (!mxIsElectron && location.protocol !== 'http:')
+{
+	(function()
+	{
+		var csp = 'default-src \'self\'; ' +
+			// storage.googleapis.com is needed for workbox-service-worker
+			'script-src %script-src% \'self\' https://viewer.diagrams.net https://storage.googleapis.com ' +
+				'https://apis.google.com https://*.pusher.com https://code.jquery.com ' +
+				// Bootstrap script in index.html (checked for changes in App.main
+				// in dev mode to avoid deployment without updating this SHA)
+				'\'sha256-/fZb/J4FQmI/TwyxqJbvALWSyGVEvnTrlj4ZTzZNKzI=\' ' +
+				// Version 13.7.5
+				'\'sha256-+CrvFhadGyk1VjhHM/t3R88LNSEKManW3TGSZi9fmHQ=\' ' +
+				// Versions before 13.7.5
+				'\'sha256-JqdgAC+ydIDMtmQclZEqgbw94J4IeABIfXAxwEJGDJs=\' ' +
+				// App.main script in index.html
+				'\'sha256-dIEi9UhRQPcyoE9/RPfkIPLe2mSS8oQzwabGMLAZzGE=\' ' +
+				// Versions before 13.7.5
+				'\'sha256-4Dg3/NrB8tLC7TUSCbrtUDWD/J6bSLka01GHn+qtNZ0=\'; ' +
+			'connect-src %connect-src% \'self\' https://*.draw.io https://*.diagrams.net ' +
+				'https://*.googleapis.com wss://*.pusher.com https://*.pusher.com ' +
+				'https://api.github.com https://raw.githubusercontent.com https://gitlab.com ' +
+				'https://graph.microsoft.com https://*.sharepoint.com  https://*.1drv.com ' +
+				'https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; ' +
+			// font-src about: is required for MathJax HTML-CSS output with STIX
+			'img-src * data:; media-src * data:; font-src * about:; ' +
+			// www.draw.io required for browser data migration to app.diagrams.net and
+			// viewer.diagrams.net required for iframe embed preview
+			'frame-src %frame-src% \'self\' https://viewer.diagrams.net https://www.draw.io https://*.google.com; ' +
+			'style-src %style-src% \'self\' \'unsafe-inline\' https://fonts.googleapis.com;'
+
+		var devCsp = csp.
+			// Adds script tags and loads shapes with eval
+			replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com https://devhost.jgraph.com \'unsafe-eval\'').
+			// Adds Trello and Dropbox backend storage
+			replace(/%connect-src%/g, 'https://*.dropboxapi.com https://api.trello.com').
+			// Loads common.css from mxgraph
+			replace(/%style-src%/g, 'https://devhost.jgraph.com').
+			replace(/%frame-src%/g, '').
+			replace(/  /g, ' ');
+		mxmeta(null, devCsp, 'Content-Security-Policy');
+
+		if (urlParams['print-csp'] == '1')
+		{
+			console.log('Content-Security-Policy')
+			console.log('Development:', devCsp)
+			console.log('app.diagrams.net:',
+				csp.replace(/%script-src%/g, 'https://www.dropbox.com https://api.trello.com').
+				replace(/%connect-src%/g, 'https://*.dropboxapi.com https://api.trello.com').
+				replace(/%frame-src%/g, '').
+					replace(/%style-src%/g, '').
+					replace(/  /g, ' '));
+			console.log('confluence.draw.io:',
+				csp.replace(/%script-src%/g, 'https://aui-cdn.atlassian.com https://connect-cdn.atl-paas.net https://ajax.googleapis.com').
+					replace(/%frame-src%/g, 'https://www.lucidchart.com https://app.lucidchart.com').
+					replace(/%style-src%/g, 'https://aui-cdn.atlassian.com https://*.atlassian.net').
+					replace(/%connect-src%/g, '').
+					replace(/  /g, ' '));
+			console.log('jira.draw.io:',
+				csp.replace(/%script-src%/g, 'https://connect-cdn.atl-paas.net').
+					replace(/%frame-src%/g, '').
+					replace(/%style-src%/g, 'https://aui-cdn.atlassian.com https://*.atlassian.net').
+					replace(/%connect-src%/g, '').
+					replace(/  /g, ' '));
+			console.log('import.diagrams.net:', 'default-src \'self\'; worker-src blob:; img-src \'self\' blob: data: https://www.lucidchart.com ' +
+					'https://app.lucidchart.com; style-src \'self\' \'unsafe-inline\'; frame-src https://www.lucidchart.com https://app.lucidchart.com;');
+		}
+	})();
+}
+			
 mxscript(drawDevUrl + 'js/cryptojs/aes.min.js');
 mxscript(drawDevUrl + 'js/spin/spin.min.js');
 mxscript(drawDevUrl + 'js/deflate/pako.min.js');
@@ -13,6 +83,7 @@ mxscript(drawDevUrl + 'js/deflate/base64.js');
 mxscript(drawDevUrl + 'js/jscolor/jscolor.js');
 mxscript(drawDevUrl + 'js/sanitizer/sanitizer.min.js');
 mxscript(drawDevUrl + 'js/croppie/croppie.min.js');
+mxscript(drawDevUrl + 'js/rough/rough.min.js');
 
 // Uses grapheditor from devhost
 mxscript(geBasePath +'/Editor.js');
@@ -42,11 +113,13 @@ mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-AWS3D.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-AWS4.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-AWS4b.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Azure.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Azure2.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Basic.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Bootstrap.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-BPMN.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-C4.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Cabinet.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Cisco.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Cisco19.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-CiscoSafe.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Citrix.js');
@@ -57,6 +130,7 @@ mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Electrical.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-ER.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Floorplan.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Flowchart.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-FluidPower.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCP.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-GCP2.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Gmdl.js');
@@ -72,6 +146,7 @@ mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Network.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Office.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-PID.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Rack.js');
+mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Signs.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Sitemap.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-Sysml.js');
 mxscript(drawDevUrl + 'js/diagramly/sidebar/Sidebar-ThreatModeling.js');
@@ -90,6 +165,7 @@ mxscript(drawDevUrl + 'js/diagramly/StorageFile.js');
 mxscript(drawDevUrl + 'js/diagramly/StorageLibrary.js');
 mxscript(drawDevUrl + 'js/diagramly/RemoteFile.js');
 mxscript(drawDevUrl + 'js/diagramly/RemoteLibrary.js');
+mxscript(drawDevUrl + 'js/diagramly/EmbedFile.js');
 mxscript(drawDevUrl + 'js/diagramly/Dialogs.js');
 mxscript(drawDevUrl + 'js/diagramly/Editor.js');
 mxscript(drawDevUrl + 'js/diagramly/EditorUi.js');
@@ -143,12 +219,6 @@ mxscript(drawDevUrl + 'js/jszip/jszip.min.js');
 
 // GraphMl Import
 mxscript(drawDevUrl + 'js/diagramly/graphml/mxGraphMlCodec.js');
-
-// Table Layout
-if (urlParams['tableLayout'] == '1')
-{
-  mxscript(drawDevUrl + 'js/diagramly/mxTableLayout.js');
-}
 
 // Org Chart Layout
 if (urlParams['orgChartDev'] == '1')

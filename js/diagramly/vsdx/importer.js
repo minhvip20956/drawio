@@ -637,19 +637,50 @@ var com;
                 	//add page layers
                 	var layers = page.getLayers();
                 	this.layersMap[0] = graph.getDefaultParent();
-                	
+                	var layersOrder = {}, lastOrder = 0, lastLayer = null;
+                    var shapes = page.getShapes();
+					
+					try
+					{
+						//Trying to determine layers order
+						for (var k = 0; shapes.entries != null && k < shapes.entries.length; k++)
+						{
+							var layer = shapes.entries[k].getValue().layerMember;
+							
+							if (layer != null)
+							{
+								if (lastLayer == null)
+								{
+									layersOrder[layer] = lastOrder;
+									lastLayer = layer;
+								}
+								else if (lastLayer != layer && layersOrder[layer] == null)
+								{
+									lastOrder++;
+									layersOrder[layer] = lastOrder;
+									lastLayer = layer;
+								}
+							}
+						}
+					}
+					catch(e)
+					{
+						console.log('VSDX Import: Failed to detect layers order');
+					}
+
             		for (var k = 0; k < layers.length; k++)
             		{
             			var layer = layers[k];
-            			
-            			if (k == 0)
+            			var layerIndex = layersOrder[k] != null? layersOrder[k] : k;
+
+            			if (layerIndex == 0)
             			{
             				var layerCell = graph.getDefaultParent();
             			}
             			else
             			{
             				var layerCell = new mxCell();
-            				graph.addCell(layerCell, graph.model.root, k);
+            				graph.addCell(layerCell, graph.model.root, layerIndex);
             			}
             			
             			layerCell.setVisible(layer.Visible == 1);
@@ -666,7 +697,6 @@ var com;
             		}
 
                 	//add shapes
-                    var shapes = page.getShapes();
                     var entries = (function (a) { var i = 0; return { next: function () { return i < a.length ? a[i++] : null; }, hasNext: function () { return i < a.length; } }; })(/* entrySet */ (function (m) { if (m.entries == null)
                         m.entries = []; return m.entries; })(shapes));
                     var pageHeight = page.getPageDimensions().y;
@@ -1409,6 +1439,27 @@ var com;
                             model.remove(removeChild);
                         }
                     }
+                    
+                    //Check for -ve width/height cells and correct it
+                    var geo = cell.geometry;
+                    
+                    if (geo != null)
+                	{
+                    	if (geo.height < 0)
+                		{
+                    		geo.height = Math.abs(geo.height);
+                    		geo.y -= geo.height;
+                    		cell.style += ';flipV=1;';
+                		}
+
+                    	if (geo.width < 0)
+                		{
+                    		geo.width = Math.abs(geo.width);
+                    		geo.x -= geo.width;
+                    		cell.style += ';flipH=1;';
+                		}
+                	}
+                    
                     if (childCount > 0) {
                         childCount = model.getChildCount(cell);
                     }

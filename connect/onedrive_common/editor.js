@@ -1,8 +1,7 @@
-function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawioOnly)
+function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawioOnly, genImage, oneDriveJS)
 {
 	idSuffix = idSuffix || '';
 	var noThumbImg = '/images/onedrive-logo.svg';
-	var connectUrl = AC.getBaseUrl() + '/atlassian-connect';
 	
 	var opts =
 	{
@@ -43,16 +42,19 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 
 	function showError(elem, errMsg)
 	{
-		elem.innerHTML = '<img src="/mxgraph/images/error.gif" border="0" align="absmiddle"/> ' + 
-			errMsg;
+		elem.innerHTML = '<img src="data:image/gif;base64,R0lGODlhEAAQAPcAAADGAIQAAISEhP8AAP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////yH5BAEAAAAALAAAAAAQABAAAAhoAAEIFBigYMGBCAkGGMCQ4cGECxtKHBAAYUQCEzFSHLiQgMeGHjEGEAAg4oCQJz86LCkxpEqHAkwyRClxpEyXGmGaREmTIsmOL1GO/DkzI0yOE2sKIMlRJsWhCQHENDiUaVSpS5cmDAgAOw==" border="0" align="absmiddle"/> ' + 
+					AC.htmlEntities(errMsg);
 	};
 	
 	function setPreview(file)
 	{
-		AP.dialog.getButton('submit').enable();
-		var altSubmitBtn = AP.dialog.getButton('altSubmitBtn');
-		
-		if (altSubmitBtn) altSubmitBtn.enable();
+		if (typeof AP != 'undefined')
+		{
+			AP.dialog.getButton('submit').enable();
+			var altSubmitBtn = AP.dialog.getButton('altSubmitBtn');
+			
+			if (altSubmitBtn) altSubmitBtn.enable();
+		}
 		
 		var thumbImg = AC.$('#thumbImg' + idSuffix);
 
@@ -95,7 +97,7 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 			}
 		}, function(errMsg)
 		{
-			prevDiv.innerHTML = 'No preview is available. ' + (errMsg? errMsg : '');
+			prevDiv.innerHTML = 'No preview is available. ' + AC.htmlEntities(errMsg? errMsg : '');
 		});
 		
 		var autoSizeCheck = AC.$('#autoSize' + idSuffix);
@@ -114,7 +116,7 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 
 		var container = document.createElement('div');
 		// NOTE: Height must be specified with default value "auto" to force automatic fit in viewer
-		container.style.cssText = 'position:absolute;width:100%;height:auto;bottom:0px;top:0px;border:1px solid transparent;';
+		container.style.cssText = 'position:absolute;width:auto;left:0px;right:0px;height:auto;bottom:0px;top:0px;border:1px solid transparent;';
 		prevDiv.appendChild(container);
 
 		var pageId, layerIds;
@@ -130,18 +132,32 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 			}
 		}
 		
+		Graph.prototype.shadowId = 'oneDriveDropShadow';
 		var viewer = new GraphViewer(container, doc.documentElement,
 				{highlight: '#3572b0', border: 8, 'auto-fit': true,
 				resize: false, nav: true, lightbox: false, title: filename,
 				'toolbar-nohide': true, 'toolbar-position': 'top', toolbar: 'pages layers',
 				pageId: pageId, layerIds: layerIds});
-
+		
+		viewer.graph.addListener('size', function()
+		{
+			var root = this.view.getDrawPane().ownerSVGElement;
+			
+			if (root != null)
+			{
+				root.style.minHeight = '';
+			}
+		});
+		
 		curViewer = viewer;
 		
-		AP.dialog.getButton('submit').enable();
-		var altSubmitBtn = AP.dialog.getButton('altSubmitBtn');
-		
-		if (altSubmitBtn) altSubmitBtn.enable();
+		if (typeof AP != 'undefined')
+		{
+			AP.dialog.getButton('submit').enable();
+			var altSubmitBtn = AP.dialog.getButton('altSubmitBtn');
+			
+			if (altSubmitBtn) altSubmitBtn.enable();
+		}
 	};
 	
 	// Waits for both APIs to load in parallel
@@ -209,11 +225,38 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 			}
 				
 			selectedFile.aspect = curViewer.diagrams[curViewer.currentPage].getAttribute('id') + ' ' + layerIds.join(' ');
+			
+			if (autoSize)
+			{
+				var bounds = curViewer.graph.view.graphBounds;
+				width = Math.round(bounds.width) || null;
+				height = Math.round(bounds.height) || null;
+			}
 		}
 		
 		spinner.spin(AC.$('#preview' + idSuffix));
 		
-		onSubmit(selectedFile, width, height, autoSize, selFileContent);
+		var image = null;
+		
+		function finalize()
+		{
+			onSubmit(selectedFile, width, height, autoSize, selFileContent, image);	
+		};
+		
+		if (genImage && curViewer.editor.isExportToCanvas())
+		{
+			curViewer.editor.exportToCanvas(function(canvas)
+	    	{
+				var data = canvas.toDataURL('image/png');
+				image = data.substring(data.lastIndexOf(',') + 1);
+	   	   		finalize();
+	    	}
+	    	, null, null, null, finalize);
+		}
+		else
+		{
+			finalize()		
+		}
 	}
 	
 	this.doSubmit = genericOnSubmit;
@@ -277,10 +320,7 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 							}, handleNonDrawFile);
 						}, handleNonDrawFile);
 					}
-					//Handle draw.io potential files (html & xml)
-					else if (useDrawio || mimeType == 'text/html' || mimeType == 'text/xml' || mimeType == 'application/xml' || mimeType == 'image/png' 
-							|| /\.svg$/i.test(file.name) || /\.html$/i.test(file.name) || /\.xml$/i.test(file.name) 
-							|| /\.png$/i.test(file.name) || /\.drawio$/i.test(file.name))
+					else
 					{
 						AC.checkDrawioFile(file, function(doc, cnt)
 						{
@@ -289,10 +329,6 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 							drawioCheck.checked = true;
 							setAutosize();
 						}, handleNonDrawFile);
-					}
-					else
-					{
-						handleNonDrawFile();
 					}
 				});
 				
@@ -394,6 +430,33 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 		}
 	};
 	
+	this.loadDrawioFile = function(fileInfo)
+	{
+		AC.$('#filename' + idSuffix).value = fileInfo.diagramDisplayName;
+		AC.$('#autoSize' + idSuffix).checked = true;
+		var prevDiv = AC.$('#preview' + idSuffix);
+		prevDiv.innerHTML = '';
+		spinner.spin(prevDiv);
+
+		AC.getFileInfo(fileInfo.sFileId, fileInfo.odriveId, function(file)
+		{
+			selectedFile = file;
+			AC.$('#filename' + idSuffix).value = file.name;
+			
+			AC.getDrawioFileDoc(file, function(doc, cnt)
+			{
+				selFileContent = cnt;
+				prevDrawioFile(doc, prevDiv, file.name, fileInfo.aspect);
+			}, function()
+			{
+				showError(prevDiv, 'Cannot read "' + file.name + '" file from OneDrive.');
+			});
+		}, function()
+		{
+			showError(prevDiv, 'Fetching file info from OneDrive failed.');
+		});
+	};
+	
 	function autoSizeChanged(isChecked)
 	{
 		if(isChecked) 
@@ -454,7 +517,7 @@ function OneDriveEditor(onSubmit, getFileInfoFn, idSuffix, notStandalone, drawio
 	{
 		var script = document.createElement("script");
 		script.onload = main;
-		script.src = "/js/onedrive/OneDrive.js";
+		script.src = oneDriveJS || "/js/onedrive/OneDrive.js";
 		head.appendChild(script);
 	};
 	

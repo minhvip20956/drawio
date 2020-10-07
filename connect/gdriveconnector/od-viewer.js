@@ -15,7 +15,7 @@
 	
 	script.onload = function()
 	{
-		AC.getPageInfo(function(pageId, draftPage)
+		AC.getCurPageId(function(pageId, draftPage)
 		{
 			confPageId = pageId;
 			isDraft = draftPage;
@@ -40,7 +40,7 @@
 	{
 		document.body.style.backgroundImage = 'none';
 		document.body.innerHTML = '<img src="/mxgraph/images/error.gif" border="0" align="absmiddle"/> ' + 
-			errMsg;
+					AC.htmlEntities(errMsg);
 		AP.resize('100%', '20');
 	};
 	
